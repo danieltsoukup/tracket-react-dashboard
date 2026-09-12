@@ -6,6 +6,12 @@ import './index.css'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { useEffect, useRef, useState } from 'react'
+import {
+  LOCATION_MARKER_OPTIONS,
+  LOCATION_TILE_ATTRIBUTION,
+  LOCATION_TILE_URL,
+  getLocationColor,
+} from './features/locations/locations.config.ts'
 import { fetchLocations, type Location } from './lib/locations.ts'
 
 function LocationsPage() {
@@ -67,15 +73,7 @@ function LocationsPage() {
       attributionControl: true,
     }).setView([20, 0], 2)
 
-    const stadiaApiKey = import.meta.env.STADIA_API_KEY
-    const tileUrl = stadiaApiKey
-      ? `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${stadiaApiKey}`
-      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-    const attribution = stadiaApiKey
-      ? '&copy; Stadia Maps, &copy; OpenMapTiles &copy; OpenStreetMap contributors'
-      : '&copy; OpenStreetMap contributors'
-
-    L.tileLayer(tileUrl, { attribution }).addTo(map)
+    L.tileLayer(LOCATION_TILE_URL, { attribution: LOCATION_TILE_ATTRIBUTION }).addTo(map)
 
     mapRef.current = map
     markersRef.current = L.layerGroup().addTo(map)
@@ -100,14 +98,12 @@ function LocationsPage() {
     const bounds = L.latLngBounds([])
     locations.forEach((location) => {
       const position: L.LatLngExpression = [location.latitude, location.longitude]
-      const color = location.active ? '#1d9b71' : '#8a9691'
+      const color = getLocationColor(location.active)
 
       L.circleMarker(position, {
-        radius: 8,
+        ...LOCATION_MARKER_OPTIONS,
         color,
         fillColor: color,
-        fillOpacity: 0.85,
-        weight: 2,
       })
         .bindPopup(`<strong>${location.label}</strong><br />${location.active ? 'Active' : 'Inactive'}`)
         .addTo(markers)
