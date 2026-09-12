@@ -1,3 +1,7 @@
+/**
+ * @file locations.config.ts
+ * @description This file contains the configuration for the locations feature.
+ */
 import type L from 'leaflet'
 
 export const LOCATION_STATUS_COLORS = {

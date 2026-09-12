@@ -14,6 +14,17 @@ import {
 } from './features/locations/locations.config.ts'
 import { fetchLocations, type Location } from './lib/locations.ts'
 
+const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
+function formatMeasurementDate(timestamp: string) {
+  const date = new Date(timestamp)
+
+  return Number.isNaN(date.getTime()) ? timestamp : measurementDateFormatter.format(date)
+}
+
 function LocationsPage() {
   /**
    * Component for displaying the list of sensor locations.
@@ -99,13 +110,14 @@ function LocationsPage() {
     locations.forEach((location) => {
       const position: L.LatLngExpression = [location.latitude, location.longitude]
       const color = getLocationColor(location.active)
+      const locationInfo = `<strong>${location.label}</strong><br />Status: ${location.active ? 'Active' : 'Inactive'}<br />Last measurement: ${formatMeasurementDate(location.latestTimestamp)}<br />Mean noise: ${location.hourMean} dB`
 
       L.circleMarker(position, {
         ...LOCATION_MARKER_OPTIONS,
         color,
         fillColor: color,
       })
-        .bindPopup(`<strong>${location.label}</strong><br />${location.active ? 'Active' : 'Inactive'}`)
+        .bindTooltip(locationInfo)
         .addTo(markers)
 
       bounds.extend(position)
