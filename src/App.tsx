@@ -1,13 +1,30 @@
+/**
+ * @file App.tsx
+ * @description This file contains the main application component for the tRacket dashboard.
+ */
 import './index.css'
-import { useEffect, useState } from 'react'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+import { useEffect, useRef, useState } from 'react'
 import { fetchLocations, type Location } from './lib/locations.ts'
 
 function LocationsPage() {
+  /**
+   * Component for displaying the list of sensor locations.
+   */
   const [locations, setLocations] = useState<Location[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mapContainerRef = useRef<HTMLDivElement | null>(null)
+  const mapRef = useRef<L.Map | null>(null)
+  const markersRef = useRef<L.LayerGroup | null>(null)
 
   useEffect(() => {
+    /**
+     * Fetch the list of sensor locations from the API and update the component state.
+     */
+    setIsLoading(true)
+    setError(null)
     const controller = new AbortController()
     let isCurrentRequest = true
 
@@ -17,6 +34,7 @@ function LocationsPage() {
           return
         }
 
+        console.info(`Loaded ${loadedLocations.length} locations.`)
         setLocations(loadedLocations)
         setError(null)
       })
@@ -39,42 +57,79 @@ function LocationsPage() {
     }
   }, [])
 
-  const activeLocations = locations.filter((location) => location.active)
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) {
+      return
+    }
+
+    const map = L.map(mapContainerRef.current, {
+      zoomControl: true,
+      attributionControl: true,
+    }).setView([20, 0], 2)
+
+    const stadiaApiKey = import.meta.env.STADIA_API_KEY
+    const tileUrl = stadiaApiKey
+      ? `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${stadiaApiKey}`
+      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    const attribution = stadiaApiKey
+      ? '&copy; Stadia Maps, &copy; OpenMapTiles &copy; OpenStreetMap contributors'
+      : '&copy; OpenStreetMap contributors'
+
+    L.tileLayer(tileUrl, { attribution }).addTo(map)
+
+    mapRef.current = map
+    markersRef.current = L.layerGroup().addTo(map)
+
+    return () => {
+      map.remove()
+      mapRef.current = null
+      markersRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const map = mapRef.current
+    const markers = markersRef.current
+
+    if (!map || !markers) {
+      return
+    }
+
+    markers.clearLayers()
+
+    const bounds = L.latLngBounds([])
+    locations.forEach((location) => {
+      const position: L.LatLngExpression = [location.latitude, location.longitude]
+      const color = location.active ? '#1d9b71' : '#8a9691'
+
+      L.circleMarker(position, {
+        radius: 8,
+        color,
+        fillColor: color,
+        fillOpacity: 0.85,
+        weight: 2,
+      })
+        .bindPopup(`<strong>${location.label}</strong><br />${location.active ? 'Active' : 'Inactive'}`)
+        .addTo(markers)
+
+      bounds.extend(position)
+    })
+
+    if (locations.length > 0) {
+      map.fitBounds(bounds, { padding: [32, 32], maxZoom: 12 })
+    }
+  }, [locations])
 
   return (
-    <main className="page-content">
-      <p className="eyebrow">Tracket dashboard</p>
-      <h1>Locations</h1>
-      {isLoading && <p className="status-message">Loading sensor locations...</p>}
-      {error && <p className="status-message status-message--error">{error}</p>}
-      {!isLoading && !error && (
-        <>
-          <section className="stats" aria-label="Location statistics">
-            <div className="stat">
-              <span className="stat-label">Total sensors</span>
-              <strong>{locations.length}</strong>
-            </div>
-            <div className="stat">
-              <span className="stat-label">Active sensors</span>
-              <strong>{activeLocations.length}</strong>
-            </div>
-          </section>
-          <ul className="location-list">
-            {locations.map((location) => (
-              <li className="location-row" key={location.id}>
-                <span className={`sensor-status ${location.active ? 'sensor-status--active' : ''}`} />
-                <span>
-                  <strong>{location.label}</strong>
-                  <small>
-                    {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
-                  </small>
-                </span>
-                <span className="location-noise">{location.hourMean.toFixed(1)} dB</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+    <main className="map-page">
+      <div ref={mapContainerRef} className="location-map" aria-label="Sensor locations map" />
+      <div className="map-status" aria-live="polite">
+        {isLoading && <span>Loading locations...</span>}
+        {error && <span className="map-status--error">{error}</span>}
+        {!isLoading && !error && locations.length > 0 && (
+          <span>{locations.length} locations loaded</span>
+        )}
+      </div>
     </main>
   )
 }
@@ -82,11 +137,6 @@ function LocationsPage() {
 function App() {
   return (
     <>
-      <header className="app-header">
-        <a className="brand" href="/locations">
-          Tracket
-        </a>
-      </header>
       <LocationsPage />
     </>
   )

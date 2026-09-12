@@ -51,7 +51,7 @@ Global and page-level styles for the current placeholder, including typography, 
 
 ### `src/assets/`
 
-Assets imported by React components. The current `hero.png` file is leftover scaffold content and is not used by the application.
+Assets imported by React components.
 
 ## Static Files
 

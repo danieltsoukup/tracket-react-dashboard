@@ -1,6 +1,13 @@
+/**
+ * @file locations.ts
+ * @description This file contains the functions and types for fetching sensor locations from the API.
+ */
 export const LOCATIONS_API_URL = 'https://api.tracket.info/v1/locations'
 
 export type Location = {
+  /**
+   * Sensor location object.
+   */
   id: number
   label: string
   latitude: number
@@ -21,6 +28,9 @@ type LocationsResponse = {
 }
 
 function isLocation(value: unknown): value is Location {
+  /**
+   * Check if value is a proper Location object.
+   */
   if (typeof value !== 'object' || value === null) {
     return false
   }
@@ -45,6 +55,10 @@ function isLocation(value: unknown): value is Location {
 }
 
 function isLocationsResponse(value: unknown): value is LocationsResponse {
+  /**
+   * Check if value is a proper LocationsResponse object
+   * by verifying every element is a Location.
+   */
   if (typeof value !== 'object' || value === null) {
     return false
   }
@@ -54,6 +68,9 @@ function isLocationsResponse(value: unknown): value is LocationsResponse {
 }
 
 export async function fetchLocations(signal?: AbortSignal): Promise<Location[]> {
+  /**
+   * Fetch the list of sensor locations from the API.
+   */
   const response = await fetch(LOCATIONS_API_URL, { signal })
 
   if (!response.ok) {
