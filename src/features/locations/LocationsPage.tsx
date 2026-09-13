@@ -1,6 +1,6 @@
 /**
- * @file App.tsx
- * @description This file contains the main application component for the tRacket dashboard.
+ * @file LocationsPage.tsx
+ * @description This file contains the main page component for displaying sensor locations on the map.
  */
 import '../../index.css'
 import 'leaflet/dist/leaflet.css'
@@ -16,8 +16,10 @@ import {
   LOCATION_TILE_URL,
   getLocationColor,
   getLocationHealth,
+  type LocationHealth,
 } from './locations.config.ts'
 import { fetchLocations, type Location } from './locations.api.ts'
+import { LocationsOverlay } from './LocationsOverlay.tsx'
 
 type LocationMarker = L.CircleMarker & {
   locationActive: boolean
@@ -53,27 +55,11 @@ function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isNoiseInfoOpen, setIsNoiseInfoOpen] = useState(false)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
-  const noiseInfoDialogRef = useRef<HTMLDialogElement | null>(null)
   const markersRef = useRef<L.MarkerClusterGroup | null>(null)
   const inactiveLayerRef = useRef<L.LayerGroup | null>(null)
   const inactiveMarkersRef = useRef<LocationMarker[]>([])
-
-  useEffect(() => {
-    const dialog = noiseInfoDialogRef.current
-
-    if (!dialog) {
-      return
-    }
-
-    if (isNoiseInfoOpen && !dialog.open) {
-      dialog.showModal()
-    } else if (!isNoiseInfoOpen && dialog.open) {
-      dialog.close()
-    }
-  }, [isNoiseInfoOpen])
 
   useEffect(() => {
     /**
@@ -244,101 +230,26 @@ function LocationsPage() {
     mapRef.current?.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
   }
 
-  const unhealthyLocationCount = locations.filter(
-    (location) => getLocationHealth(location.active, location.hourEnd, location.hourMean) === 'unhealthy',
-  ).length
-  const activeLocationCount = locations.filter(
-    (location) => getLocationHealth(location.active, location.hourEnd, location.hourMean) === 'active',
-  ).length
-  const inactiveLocationCount = locations.filter(
-    (location) => getLocationHealth(location.active, location.hourEnd, location.hourMean) === 'inactive',
-  ).length
+  const locationCounts = locations.reduce<Record<LocationHealth, number>>(
+    (counts, location) => {
+      const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
+      counts[health] += 1
+      return counts
+    },
+    { unhealthy: 0, active: 0, inactive: 0 },
+  )
 
   return (
     <main className="map-page">
       <div ref={mapContainerRef} className="location-map" aria-label="Sensor locations map" />
-      <button
-        className="map-reset-button"
-        type="button"
-        aria-label="Reset map view"
-        title="Reset map view"
-        onClick={resetMapView}
-      >
-        <span className="material-symbols-outlined" aria-hidden="true">public</span>
-      </button>
-      <div className="map-status" aria-live="polite">
-        {isLoading && <span>Loading locations...</span>}
-        {error && <span className="map-status--error">{error}</span>}
-        {!isLoading && !error && locations.length > 0 && (
-          <span className="map-status__counts">
-            <span className="map-status__count">
-              <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--unhealthy" aria-hidden="true">
-                sensors
-              </span>
-              <span>Unhealthy: {unhealthyLocationCount}</span>
-            </span>
-            <span className="map-status__count">
-              <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--active" aria-hidden="true">
-                sensors
-              </span>
-              <span>Active: {activeLocationCount}</span>
-            </span>
-            <span className="map-status__count">
-              <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--inactive" aria-hidden="true">
-                sensors_off
-              </span>
-              <span>Inactive: {inactiveLocationCount}</span>
-            </span>
-            <button
-              className="map-status__info-button"
-              type="button"
-              aria-label="Noise level guidance"
-              title="Noise level guidance"
-              onClick={() => setIsNoiseInfoOpen(true)}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">info</span>
-            </button>
-          </span>
-        )}
-      </div>
-      <dialog
-        className="noise-info-modal"
-        ref={noiseInfoDialogRef}
-        aria-labelledby="noise-info-title"
-        onCancel={() => setIsNoiseInfoOpen(false)}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) {
-            setIsNoiseInfoOpen(false)
-          }
-        }}
-      >
-        <div className="noise-info-modal__header">
-          <h2 id="noise-info-title">How loud is too loud?</h2>
-          <button
-            className="noise-info-modal__close"
-            type="button"
-            aria-label="Close noise level guidance"
-            title="Close"
-            onClick={() => setIsNoiseInfoOpen(false)}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
-        </div>
-        <p>
-          Location markers turn red when their hourly mean exceeds the outdoor health thresholds set by the WHO.
-        </p>
-        <ul>
-          <li><strong>07:00-23:00:</strong> keep below 55 dB</li>
-          <li><strong>23:00-07:00:</strong> keep below 40 dB</li>
-        </ul>
-        <a
-          href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Read the Toronto Public Health reference
-        </a>
-      </dialog>
+      <LocationsOverlay
+        unhealthy={locationCounts.unhealthy}
+        active={locationCounts.active}
+        inactive={locationCounts.inactive}
+        isLoading={isLoading}
+        error={error}
+        onResetMap={resetMapView}
+      />
     </main>
   )
 }
