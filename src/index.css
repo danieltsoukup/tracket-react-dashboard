@@ -27,6 +27,69 @@ body {
 .sensor-page {
   min-height: 100%;
   box-sizing: border-box;
+  background: #fff4e6;
+}
+
+.sensor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  box-sizing: border-box;
+  padding: 0 clamp(20px, 5vw, 72px);
+  background: #242424;
+}
+
+.sensor-header__brand {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sensor-header__brand img {
+  display: block;
+  width: 118px;
+  height: auto;
+}
+
+.sensor-header__actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 32px);
+}
+
+.sensor-header__actions a {
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-decoration: none;
+}
+
+.sensor-header__actions a:hover,
+.sensor-header__actions a:focus-visible {
+  color: #fb9500;
+}
+
+.sensor-header__actions a:focus-visible {
+  outline: 2px solid #fb9500;
+  outline-offset: 5px;
+}
+
+.sensor-header__login {
+  padding: 10px 18px;
+  color: #242424 !important;
+  background: #fb9500;
+  border-radius: 3px;
+}
+
+.sensor-header__login:hover,
+.sensor-header__login:focus-visible {
+  color: #242424 !important;
+  background: #fdcb80;
+}
+
+.sensor-page__content {
   padding: 48px 24px;
 }
 
