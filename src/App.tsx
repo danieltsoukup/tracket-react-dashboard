@@ -21,6 +21,9 @@ type LocationMarker = L.CircleMarker & {
   locationActive: boolean
 }
 
+const INITIAL_MAP_CENTER: L.LatLngExpression = [43.6532, -79.3832]
+const INITIAL_MAP_ZOOM = 3
+
 function LocationsPage() {
   /**
    * Component for displaying the list of sensor locations.
@@ -81,7 +84,7 @@ function LocationsPage() {
     const map = L.map(mapContainerRef.current, {
       zoomControl: true,
       attributionControl: true,
-    }).setView([20, 0], 2)
+    }).setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
 
     L.tileLayer(LOCATION_TILE_URL, { attribution: LOCATION_TILE_ATTRIBUTION }).addTo(map)
 
@@ -150,9 +153,22 @@ function LocationsPage() {
     }
   }, [locations])
 
+  function resetMapView() {
+    mapRef.current?.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
+  }
+
   return (
     <main className="map-page">
       <div ref={mapContainerRef} className="location-map" aria-label="Sensor locations map" />
+      <button
+        className="map-reset-button"
+        type="button"
+        aria-label="Reset map view"
+        title="Reset map view"
+        onClick={resetMapView}
+      >
+        <span className="material-symbols-outlined" aria-hidden="true">public</span>
+      </button>
       <div className="map-status" aria-live="polite">
         {isLoading && <span>Loading locations...</span>}
         {error && <span className="map-status--error">{error}</span>}
