@@ -52,11 +52,27 @@ function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isNoiseInfoOpen, setIsNoiseInfoOpen] = useState(false)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
+  const noiseInfoDialogRef = useRef<HTMLDialogElement | null>(null)
   const markersRef = useRef<L.MarkerClusterGroup | null>(null)
   const inactiveLayerRef = useRef<L.LayerGroup | null>(null)
   const inactiveMarkersRef = useRef<LocationMarker[]>([])
+
+  useEffect(() => {
+    const dialog = noiseInfoDialogRef.current
+
+    if (!dialog) {
+      return
+    }
+
+    if (isNoiseInfoOpen && !dialog.open) {
+      dialog.showModal()
+    } else if (!isNoiseInfoOpen && dialog.open) {
+      dialog.close()
+    }
+  }, [isNoiseInfoOpen])
 
   useEffect(() => {
     /**
@@ -257,9 +273,56 @@ function LocationsPage() {
               </span>
               <span>Inactive: {inactiveLocationCount}</span>
             </span>
+            <button
+              className="map-status__info-button"
+              type="button"
+              aria-label="Noise level guidance"
+              title="Noise level guidance"
+              onClick={() => setIsNoiseInfoOpen(true)}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">info</span>
+            </button>
           </span>
         )}
       </div>
+      <dialog
+        className="noise-info-modal"
+        ref={noiseInfoDialogRef}
+        aria-labelledby="noise-info-title"
+        onCancel={() => setIsNoiseInfoOpen(false)}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            setIsNoiseInfoOpen(false)
+          }
+        }}
+      >
+        <div className="noise-info-modal__header">
+          <h2 id="noise-info-title">How loud is too loud?</h2>
+          <button
+            className="noise-info-modal__close"
+            type="button"
+            aria-label="Close noise level guidance"
+            title="Close"
+            onClick={() => setIsNoiseInfoOpen(false)}
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+        <p>
+          Location markers turn red when their hourly mean exceeds the outdoor health thresholds set by the WHO.
+        </p>
+        <ul>
+          <li><strong>07:00-23:00:</strong> keep below 55 dB</li>
+          <li><strong>23:00-07:00:</strong> keep below 40 dB</li>
+        </ul>
+        <a
+          href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Read the Toronto Public Health reference
+        </a>
+      </dialog>
     </main>
   )
 }

@@ -28,7 +28,8 @@ export function getLocationColor(active: boolean, hourEnd: string, hourMean: num
   /**
    * Get the color for a location marker based on its status and noise level.
    * Active sensors are red when hourMean is above 55 dB from 07:00 through
-   * 22:59, or above 40 dB from 23:00 through 06:59. Inactive sensors remain gray.
+   * 22:59, or above 40 dB from 23:00 through 06:59. 
+   * Inactive sensors remain gray.
    */
   if (!active) {
     return LOCATION_STATUS_COLORS.inactive

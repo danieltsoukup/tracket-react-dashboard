@@ -80,6 +80,78 @@ body {
   white-space: nowrap;
 }
 
+.map-status__info-button,
+.noise-info-modal__close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: #24323a;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.map-status__info-button:hover,
+.noise-info-modal__close:hover {
+  background: rgb(36 50 58 / 10%);
+}
+
+.map-status__info-button:focus-visible,
+.noise-info-modal__close:focus-visible {
+  outline: 3px solid rgb(251 149 0 / 45%);
+  outline-offset: 2px;
+}
+
+.map-status__info-button .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
+.noise-info-modal {
+  width: min(420px, calc(100vw - 40px));
+  padding: 20px;
+  color: #24323a;
+  background: rgb(255 255 255 / 98%);
+  border: 1px solid rgb(36 50 58 / 14%);
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgb(36 50 58 / 24%);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.noise-info-modal::backdrop {
+  background: rgb(36 50 58 / 38%);
+}
+
+.noise-info-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.noise-info-modal h2 {
+  margin: 0;
+  font-family: 'Familjen Grotesk', sans-serif;
+  font-size: 1.25rem;
+}
+
+.noise-info-modal p {
+  margin: 16px 0 12px;
+}
+
+.noise-info-modal ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+}
+
+.noise-info-modal a {
+  color: #a43d32;
+  font-weight: 700;
+}
+
 .map-reset-button {
   position: absolute;
   left: 16px;
