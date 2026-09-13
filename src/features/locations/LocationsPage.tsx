@@ -15,6 +15,7 @@ import {
   LOCATION_TILE_ATTRIBUTION,
   LOCATION_TILE_URL,
   getLocationColor,
+  getLocationHealth,
 } from './locations.config.ts'
 import { fetchLocations, type Location } from './locations.api.ts'
 
@@ -131,15 +132,17 @@ function LocationsPage() {
       showCoverageOnHover: false,
       iconCreateFunction: (cluster) => {
         const childMarkers = cluster.getAllChildMarkers() as unknown as LocationMarker[]
-        const hasActiveLocation = childMarkers.some((marker) => marker.locationActive)
+        const hasActiveLocation = childMarkers.some(
+          (marker) => getLocationHealth(marker.locationActive, marker.locationHourEnd, marker.locationHourMean) === 'active',
+        )
         const hasAlertLocation = childMarkers.some(
-          (marker) =>
-            getLocationColor(marker.locationActive, marker.locationHourEnd, marker.locationHourMean) ===
-            LOCATION_STATUS_COLORS.alert,
+          (marker) => getLocationHealth(marker.locationActive, marker.locationHourEnd, marker.locationHourMean) === 'unhealthy',
         )
         const color = hasAlertLocation
           ? LOCATION_STATUS_COLORS.alert
-          : getLocationColor(hasActiveLocation, '', 0)
+          : hasActiveLocation
+            ? LOCATION_STATUS_COLORS.active
+            : LOCATION_STATUS_COLORS.inactive
 
         return L.divIcon({
           className: `marker-cluster marker-cluster-small location-cluster--${hasAlertLocation ? 'alert' : hasActiveLocation ? 'active' : 'inactive'}`,
@@ -241,8 +244,15 @@ function LocationsPage() {
     mapRef.current?.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
   }
 
-  const activeLocationCount = locations.filter((location) => location.active).length
-  const inactiveLocationCount = locations.length - activeLocationCount
+  const unhealthyLocationCount = locations.filter(
+    (location) => getLocationHealth(location.active, location.hourEnd, location.hourMean) === 'unhealthy',
+  ).length
+  const activeLocationCount = locations.filter(
+    (location) => getLocationHealth(location.active, location.hourEnd, location.hourMean) === 'active',
+  ).length
+  const inactiveLocationCount = locations.filter(
+    (location) => getLocationHealth(location.active, location.hourEnd, location.hourMean) === 'inactive',
+  ).length
 
   return (
     <main className="map-page">
@@ -261,6 +271,12 @@ function LocationsPage() {
         {error && <span className="map-status--error">{error}</span>}
         {!isLoading && !error && locations.length > 0 && (
           <span className="map-status__counts">
+            <span className="map-status__count">
+              <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--unhealthy" aria-hidden="true">
+                sensors
+              </span>
+              <span>Unhealthy: {unhealthyLocationCount}</span>
+            </span>
             <span className="map-status__count">
               <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--active" aria-hidden="true">
                 sensors

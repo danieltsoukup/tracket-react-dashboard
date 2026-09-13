@@ -237,6 +237,10 @@ body {
   color: #fb9500;
 }
 
+.location-tooltip__status-icon--unhealthy {
+  color: #d64545;
+}
+
 .location-tooltip__status-icon--inactive {
   color: #8a9691;
 }

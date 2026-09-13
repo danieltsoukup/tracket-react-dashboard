@@ -24,19 +24,30 @@ export const LOCATION_TILE_URL = `https://tiles.stadiamaps.com/tiles/alidade_smo
 
 export const LOCATION_TILE_ATTRIBUTION = '&copy; Stadia Maps, &copy; OpenMapTiles &copy; OpenStreetMap contributors'
 
-export function getLocationColor(active: boolean, hourEnd: string, hourMean: number) {
+export type LocationHealth = 'unhealthy' | 'active' | 'inactive'
+
+export function getLocationHealth(active: boolean, hourEnd: string, hourMean: number): LocationHealth {
   /**
-   * Get the color for a location marker based on its status and noise level.
+   * Classify a location based on its active status and noise level.
    * Active sensors are red when hourMean is above 55 dB from 07:00 through
-   * 22:59, or above 40 dB from 23:00 through 06:59. 
-   * Inactive sensors remain gray.
+   * 22:59, or above 40 dB from 23:00 through 06:59. Inactive sensors remain
+   * inactive regardless of their noise level.
    */
   if (!active) {
-    return LOCATION_STATUS_COLORS.inactive
+    return 'inactive'
   }
 
   const hour = new Date(hourEnd).getHours()
   const threshold = hour >= 7 && hour < 23 ? 55 : 40
 
-  return hourMean > threshold ? LOCATION_STATUS_COLORS.alert : LOCATION_STATUS_COLORS.active
+  return hourMean > threshold ? 'unhealthy' : 'active'
+}
+
+export function getLocationColor(active: boolean, hourEnd: string, hourMean: number) {
+  /**
+   * Get the color for a location marker based on its health classification.
+   */
+  const health = getLocationHealth(active, hourEnd, hourMean)
+
+  return LOCATION_STATUS_COLORS[health === 'unhealthy' ? 'alert' : health]
 }
