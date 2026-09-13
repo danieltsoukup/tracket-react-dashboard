@@ -24,6 +24,19 @@ body {
   width: 100%;
 }
 
+.sensor-page {
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 48px 24px;
+}
+
+.sensor-page__eyebrow {
+  color: #718078;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .location-map {
   height: 100%;
   width: 100%;

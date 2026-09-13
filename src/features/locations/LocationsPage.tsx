@@ -177,6 +177,7 @@ function LocationsPage() {
           direction: 'top',
           offset: [0, -8],
         })
+        .on('click', () => window.open(`/locations/${location.id}`, '_blank', 'noopener,noreferrer'))
         .addTo(markers)
 
       if (!location.active && !showInactiveLocations) {
@@ -218,12 +219,4 @@ function LocationsPage() {
   )
 }
 
-function App() {
-  return (
-    <>
-      <LocationsPage />
-    </>
-  )
-}
-
-export default App
+export default LocationsPage
