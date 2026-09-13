@@ -2,7 +2,7 @@
  * @file locations.ts
  * @description This file contains the functions and types for fetching sensor locations from the API.
  */
-import { getLocationColor } from '../features/locations/locations.config.ts'
+import { getLocationColor } from './locations.config.ts'
 
 export const LOCATIONS_API_URL = 'https://api.tracket.info/v1/locations'
 

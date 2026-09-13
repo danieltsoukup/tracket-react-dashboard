@@ -15,7 +15,7 @@ import {
   LOCATION_TILE_URL,
   getLocationColor,
 } from './locations.config.ts'
-import { fetchLocations, getLocationInfo, type Location } from '../../lib/locations.ts'
+import { fetchLocations, getLocationInfo, type Location } from './locations.api.ts'
 
 type LocationMarker = L.CircleMarker & {
   locationActive: boolean
