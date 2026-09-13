@@ -34,6 +34,8 @@ function LocationsPage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.MarkerClusterGroup | null>(null)
+  const inactiveLayerRef = useRef<L.LayerGroup | null>(null)
+  const inactiveMarkersRef = useRef<LocationMarker[]>([])
 
   useEffect(() => {
     /**
@@ -88,8 +90,7 @@ function LocationsPage() {
 
     L.tileLayer(LOCATION_TILE_URL, { attribution: LOCATION_TILE_ATTRIBUTION }).addTo(map)
 
-    mapRef.current = map
-    markersRef.current = L.markerClusterGroup({
+    const clusterOptions: L.MarkerClusterGroupOptions = {
       showCoverageOnHover: false,
       iconCreateFunction: (cluster) => {
         const hasActiveLocation = cluster
@@ -103,12 +104,38 @@ function LocationsPage() {
           iconSize: [40, 40],
         })
       },
-    }).addTo(map)
+    }
+    const markers = L.markerClusterGroup(clusterOptions).addTo(map)
+    const inactiveLayer = L.layerGroup().addTo(map)
+
+    const handleInactiveLayerAdd = (event: L.LayersControlEvent) => {
+      if (event.layer === inactiveLayer) {
+        markers.addLayers(inactiveMarkersRef.current)
+      }
+    }
+
+    const handleInactiveLayerRemove = (event: L.LayersControlEvent) => {
+      if (event.layer === inactiveLayer) {
+        markers.removeLayers(inactiveMarkersRef.current)
+      }
+    }
+
+    L.control.layers(undefined, { 'Inactive locations': inactiveLayer }).addTo(map)
+    map.on('overlayadd', handleInactiveLayerAdd)
+    map.on('overlayremove', handleInactiveLayerRemove)
+
+    mapRef.current = map
+    markersRef.current = markers
+    inactiveLayerRef.current = inactiveLayer
 
     return () => {
+      map.off('overlayadd', handleInactiveLayerAdd)
+      map.off('overlayremove', handleInactiveLayerRemove)
       map.remove()
       mapRef.current = null
       markersRef.current = null
+      inactiveLayerRef.current = null
+      inactiveMarkersRef.current = []
     }
   }, [])
 
@@ -118,12 +145,15 @@ function LocationsPage() {
      */
     const map = mapRef.current
     const markers = markersRef.current
+    const inactiveLayer = inactiveLayerRef.current
 
-    if (!map || !markers) {
+    if (!map || !markers || !inactiveLayer) {
       return
     }
 
     markers.clearLayers()
+    inactiveMarkersRef.current = []
+    const showInactiveLocations = map.hasLayer(inactiveLayer)
 
     const bounds = L.latLngBounds([])
     locations.forEach((location) => {
@@ -137,6 +167,10 @@ function LocationsPage() {
       }) as LocationMarker
 
       marker.locationActive = location.active
+      if (!location.active) {
+        inactiveMarkersRef.current.push(marker)
+      }
+
       marker
         .bindTooltip(getLocationInfo(location), {
           className: 'location-tooltip',
@@ -144,6 +178,10 @@ function LocationsPage() {
           offset: [0, -8],
         })
         .addTo(markers)
+
+      if (!location.active && !showInactiveLocations) {
+        markers.removeLayer(marker)
+      }
 
       bounds.extend(position)
     })
