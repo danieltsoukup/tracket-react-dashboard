@@ -1,32 +1,29 @@
-# React + TypeScript + Vite
+# tRacket: Community-Driven Urban Noise Monitoring
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Environmental noise, especially in urban settings, is a [known public health concern](https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf):
 
-Currently, two official plugins are available:
+> The growing body of evidence indicates that exposure to excessive environmental
+noise does not only impact quality of life and cause hearing loss but also has other health impacts, such as cardiovascular effects, cognitive impacts, sleep disturbance and mental health effects.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## React Compiler
+Our application presents a real-time, interactive visual interface to a system of IoT sound meters deployed in the city of Toronto, Ontario, to better understand the ambient sound levels as well as extreme noise events local communities experience day to day.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The app is currently under active development but can be accessed [by following this link](https://dashboard.tracket.info/locations) which gives you the system level map view. Individual devices can be reached by appending `/<location-id>` to the previous URL [like this](https://dashboard.tracket.info/locations/572234). The app might take a few seconds to load.
 
-## Expanding the Oxlint configuration
+The project has been started and is maintained by volunteers from the [CivicTech Toronto](http://www.civictech.ca) community.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Privacy
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+We followed Privacy by Design principles in setting up the data collection. 
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+1. The sound meter devices are deployed on private properties in residential areas at different locations in the city. We are **not publishing exact device locations**. 
+2. The devices **do not record sound** only sound levels in A-weighted decibel levels [dBA](https://en.wikipedia.org/wiki/Decibel). 
+3. We calculate minimum and maximum sound levels at 5 minute intervals on the device and **only broadcast these aggregate values** (along wiht the device ID) to a database.
+
+## Data Exploration
+
+We created a [starter notebook](notebooks/explore_noise_starter_notebook.ipynb) that you can easily run on [Google Colab](https://colab.research.google.com/) yourself to explore the data more in-depth.
+
+## For Developers
+
+If you'd like to contribute or dig deeper into the technical details, please see our [DEV-README](docs/DEV-README.md) and check out the open Issues on GitHub.

@@ -11,18 +11,39 @@ import 'leaflet.markercluster'
 import { useEffect, useRef, useState } from 'react'
 import {
   LOCATION_MARKER_OPTIONS,
+  LOCATION_STATUS_COLORS,
   LOCATION_TILE_ATTRIBUTION,
   LOCATION_TILE_URL,
   getLocationColor,
 } from './locations.config.ts'
-import { fetchLocations, getLocationInfo, type Location } from './locations.api.ts'
+import { fetchLocations, type Location } from './locations.api.ts'
 
 type LocationMarker = L.CircleMarker & {
   locationActive: boolean
+  locationHourEnd: string
+  locationHourMean: number
 }
 
 const INITIAL_MAP_CENTER: L.LatLngExpression = [43.6532, -79.3832]
 const INITIAL_MAP_ZOOM = 3
+const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
+function formatMeasurementDate(timestamp: string) {
+  const date = new Date(timestamp)
+
+  return Number.isNaN(date.getTime()) ? timestamp : measurementDateFormatter.format(date)
+}
+
+function getLocationInfo(location: Location) {
+  const color = getLocationColor(location.active, location.hourEnd, location.hourMean)
+  const meanNoise = location.hourMean.toFixed(1)
+  const sensorIcon = location.active ? 'sensors' : 'sensors_off'
+
+  return `<div class="location-tooltip__label"><span class="material-symbols-outlined" style="color: ${color}" aria-hidden="true">${sensorIcon}</span><span class="location-tooltip__title">${location.label}</span></div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.hourEnd)}</div>`
+}
 
 function LocationsPage() {
   /**
@@ -93,13 +114,19 @@ function LocationsPage() {
     const clusterOptions: L.MarkerClusterGroupOptions = {
       showCoverageOnHover: false,
       iconCreateFunction: (cluster) => {
-        const hasActiveLocation = cluster
-          .getAllChildMarkers()
-          .some((marker) => (marker as unknown as LocationMarker).locationActive)
-        const color = getLocationColor(hasActiveLocation)
+        const childMarkers = cluster.getAllChildMarkers() as unknown as LocationMarker[]
+        const hasActiveLocation = childMarkers.some((marker) => marker.locationActive)
+        const hasAlertLocation = childMarkers.some(
+          (marker) =>
+            getLocationColor(marker.locationActive, marker.locationHourEnd, marker.locationHourMean) ===
+            LOCATION_STATUS_COLORS.alert,
+        )
+        const color = hasAlertLocation
+          ? LOCATION_STATUS_COLORS.alert
+          : getLocationColor(hasActiveLocation, '', 0)
 
         return L.divIcon({
-          className: `marker-cluster marker-cluster-small location-cluster--${hasActiveLocation ? 'active' : 'inactive'}`,
+          className: `marker-cluster marker-cluster-small location-cluster--${hasAlertLocation ? 'alert' : hasActiveLocation ? 'active' : 'inactive'}`,
           html: `<div style="background-color: ${color}"><span>${cluster.getChildCount()}</span></div>`,
           iconSize: [40, 40],
         })
@@ -158,7 +185,7 @@ function LocationsPage() {
     const bounds = L.latLngBounds([])
     locations.forEach((location) => {
       const position: L.LatLngExpression = [location.latitude, location.longitude]
-      const color = getLocationColor(location.active)
+      const color = getLocationColor(location.active, location.hourEnd, location.hourMean)
 
       const marker = L.circleMarker(position, {
         ...LOCATION_MARKER_OPTIONS,
@@ -167,6 +194,8 @@ function LocationsPage() {
       }) as LocationMarker
 
       marker.locationActive = location.active
+      marker.locationHourEnd = location.hourEnd
+      marker.locationHourMean = location.hourMean
       if (!location.active) {
         inactiveMarkersRef.current.push(marker)
       }
@@ -196,6 +225,9 @@ function LocationsPage() {
     mapRef.current?.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
   }
 
+  const activeLocationCount = locations.filter((location) => location.active).length
+  const inactiveLocationCount = locations.length - activeLocationCount
+
   return (
     <main className="map-page">
       <div ref={mapContainerRef} className="location-map" aria-label="Sensor locations map" />
@@ -212,7 +244,20 @@ function LocationsPage() {
         {isLoading && <span>Loading locations...</span>}
         {error && <span className="map-status--error">{error}</span>}
         {!isLoading && !error && locations.length > 0 && (
-          <span>{locations.length} locations loaded</span>
+          <span className="map-status__counts">
+            <span className="map-status__count">
+              <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--active" aria-hidden="true">
+                sensors
+              </span>
+              <span>Active: {activeLocationCount}</span>
+            </span>
+            <span className="map-status__count">
+              <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--inactive" aria-hidden="true">
+                sensors_off
+              </span>
+              <span>Inactive: {inactiveLocationCount}</span>
+            </span>
+          </span>
         )}
       </div>
     </main>

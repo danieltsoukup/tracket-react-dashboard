@@ -62,6 +62,24 @@ body {
   color: #a43d32;
 }
 
+.map-status__counts {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.map-status__count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Familjen Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .map-reset-button {
   position: absolute;
   left: 16px;
@@ -138,6 +156,19 @@ body {
   line-height: 1;
 }
 
+.location-tooltip__status-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.location-tooltip__status-icon--active {
+  color: #fb9500;
+}
+
+.location-tooltip__status-icon--inactive {
+  color: #8a9691;
+}
+
 .location-tooltip__value {
   display: block;
   margin-top: 5px;
@@ -158,6 +189,14 @@ body {
 
 .location-cluster--active div {
   background-color: rgb(251 149 0 / 88%) !important;
+}
+
+.marker-cluster.location-cluster--alert {
+  background-color: rgb(214 69 69 / 60%) !important;
+}
+
+.location-cluster--alert div {
+  background-color: rgb(214 69 69 / 88%) !important;
 }
 
 .marker-cluster.location-cluster--inactive {
