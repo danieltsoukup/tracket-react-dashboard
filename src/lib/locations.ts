@@ -49,8 +49,9 @@ export function getLocationInfo(location: Location) {
    */
   const color = getLocationColor(location.active)
   const meanNoise = location.hourMean.toFixed(1)
+  const sensorIcon = location.active ? 'sensors' : 'sensors_off'
 
-  return `<div class="location-tooltip__label">${location.label}</div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.latestTimestamp)}</div>`
+  return `<div class="location-tooltip__label"><span class="material-symbols-outlined" style="color: ${color}" aria-hidden="true">${sensorIcon}</span><span>${location.label}</span></div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.latestTimestamp)}</div>`
 }
 
 function isLocation(value: unknown): value is Location {
