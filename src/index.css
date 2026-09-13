@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0');
+@import url('https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #24323a;
   background: #dfe7e2;
   font-synthesis: none;
@@ -55,7 +56,7 @@ body {
   border: 1px solid rgb(36 50 58 / 12%);
   border-radius: 10px;
   box-shadow: 0 8px 24px rgb(36 50 58 / 18%);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .location-tooltip::before {
@@ -68,6 +69,7 @@ body {
   gap: 5px;
   max-width: 180px;
   overflow: hidden;
+  font-family: 'Familjen Grotesk', sans-serif;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -95,3 +97,32 @@ body {
   color: #718078;
   font-size: 0.7rem;
 }
+
+.marker-cluster.location-cluster--active {
+  background-color: rgb(251 149 0 / 60%) !important;
+}
+
+.location-cluster--active div {
+  background-color: rgb(251 149 0 / 88%) !important;
+}
+
+.marker-cluster.location-cluster--inactive {
+  background-color: rgb(138 150 145 / 60%) !important;
+}
+
+.location-cluster--inactive div {
+  background-color: rgb(138 150 145 / 88%) !important;
+}
+
+.marker-cluster div {
+  color: #fff !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.875rem !important;
+  font-weight: 800 !important;
+}
+
+.marker-cluster span {
+  color: #fff !important;
+  font-weight: 800 !important;
+}
+

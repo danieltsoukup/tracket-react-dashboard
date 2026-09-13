@@ -4,7 +4,10 @@
  */
 import './index.css'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import L from 'leaflet'
+import 'leaflet.markercluster'
 import { useEffect, useRef, useState } from 'react'
 import {
   LOCATION_MARKER_OPTIONS,
@@ -13,6 +16,10 @@ import {
   getLocationColor,
 } from './features/locations/locations.config.ts'
 import { fetchLocations, getLocationInfo, type Location } from './lib/locations.ts'
+
+type LocationMarker = L.CircleMarker & {
+  locationActive: boolean
+}
 
 function LocationsPage() {
   /**
@@ -23,7 +30,7 @@ function LocationsPage() {
   const [error, setError] = useState<string | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
-  const markersRef = useRef<L.LayerGroup | null>(null)
+  const markersRef = useRef<L.MarkerClusterGroup | null>(null)
 
   useEffect(() => {
     /**
@@ -79,7 +86,21 @@ function LocationsPage() {
     L.tileLayer(LOCATION_TILE_URL, { attribution: LOCATION_TILE_ATTRIBUTION }).addTo(map)
 
     mapRef.current = map
-    markersRef.current = L.layerGroup().addTo(map)
+    markersRef.current = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      iconCreateFunction: (cluster) => {
+        const hasActiveLocation = cluster
+          .getAllChildMarkers()
+          .some((marker) => (marker as unknown as LocationMarker).locationActive)
+        const color = getLocationColor(hasActiveLocation)
+
+        return L.divIcon({
+          className: `marker-cluster marker-cluster-small location-cluster--${hasActiveLocation ? 'active' : 'inactive'}`,
+          html: `<div style="background-color: ${color}"><span>${cluster.getChildCount()}</span></div>`,
+          iconSize: [40, 40],
+        })
+      },
+    }).addTo(map)
 
     return () => {
       map.remove()
@@ -106,11 +127,14 @@ function LocationsPage() {
       const position: L.LatLngExpression = [location.latitude, location.longitude]
       const color = getLocationColor(location.active)
 
-      L.circleMarker(position, {
+      const marker = L.circleMarker(position, {
         ...LOCATION_MARKER_OPTIONS,
         color,
         fillColor: color,
-      })
+      }) as LocationMarker
+
+      marker.locationActive = location.active
+      marker
         .bindTooltip(getLocationInfo(location), {
           className: 'location-tooltip',
           direction: 'top',
