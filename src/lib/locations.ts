@@ -2,6 +2,8 @@
  * @file locations.ts
  * @description This file contains the functions and types for fetching sensor locations from the API.
  */
+import { getLocationColor } from '../features/locations/locations.config.ts'
+
 export const LOCATIONS_API_URL = 'https://api.tracket.info/v1/locations'
 
 export type Location = {
@@ -24,7 +26,31 @@ export type Location = {
 }
 
 type LocationsResponse = {
+  /**
+   * Response object from the locations API.
+   */
   locations: Location[]
+}
+
+const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
+function formatMeasurementDate(timestamp: string) {
+  const date = new Date(timestamp)
+
+  return Number.isNaN(date.getTime()) ? timestamp : measurementDateFormatter.format(date)
+}
+
+export function getLocationInfo(location: Location) {
+  /**
+   * Get the HTML content for a location marker tooltip.
+   */
+  const color = getLocationColor(location.active)
+  const meanNoise = location.hourMean.toFixed(1)
+
+  return `<div class="location-tooltip__label">${location.label}</div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.latestTimestamp)}</div>`
 }
 
 function isLocation(value: unknown): value is Location {

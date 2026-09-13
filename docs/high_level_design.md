@@ -28,4 +28,29 @@ Frontend-only web application to present location and time-series data in a simp
 ## Data APIs
 
 - locations: `https://api.tracket.info/v1/locations`
+
+Example:
+
+```
+{
+  "locations": [
+    {
+      "id": 572227,
+      "label": "Scott St. & Wellington St.",
+      "latitude": 43.64815606522,
+      "longitude": -79.376049461048,
+      "radius": 75.452213039348,
+      "active": true,
+      "lastChecked": "2026-09-07T17:11:22-04:00",
+      "latestTimestamp": "2024-07-06T14:03:00-04:00",
+      "hourStart": "2024-07-06T13:03:00-04:00",
+      "hourEnd": "2024-07-06T14:03:00-04:00",
+      "hourMin": 2,
+      "hourMax": 5,
+      "hourMean": 2.555
+    },
+    ...
+}
+```
+
 - sensors: TBD
