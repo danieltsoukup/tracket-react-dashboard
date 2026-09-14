@@ -27,7 +27,7 @@ body {
 .sensor-page {
   min-height: 100%;
   box-sizing: border-box;
-  background: #fff4e6;
+  background: #fff9f0;
 }
 
 .sensor-header {
@@ -106,6 +106,42 @@ body {
   background: #fff9f0;
 }
 
+.noise-chart-tooltip {
+  position: absolute;
+  z-index: 10;
+  min-width: 142px;
+  padding: 10px 12px;
+  color: #24323a;
+  background: rgb(255 255 255 / 94%);
+  border: 1px solid rgb(36 50 58 / 12%);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgb(36 50 58 / 18%);
+  pointer-events: none;
+  transform: translateY(-100%);
+}
+
+.noise-chart-tooltip__date {
+  color: #718078;
+  font-size: 0.7rem;
+}
+
+.noise-chart-tooltip__mean {
+  margin-top: 5px;
+  color: #e25100;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.noise-chart-tooltip__range {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: #718078;
+  font-size: 0.7rem;
+}
+
 .noise-chart-container {
   position: relative;
 }
@@ -133,16 +169,16 @@ body {
 .noise-chart-toggle {
   display: inline-flex;
   padding: 3px;
-  background: #242424;
-  border-radius: 4px;
+  background: #f1f1f1;
+  border-radius: 999px;
 }
 
 .noise-chart-toggle__option {
   padding: 8px 14px;
-  color: #fff;
+  color: #5f5f5f;
   background: transparent;
   border: 0;
-  border-radius: 2px;
+  border-radius: 999px;
   cursor: pointer;
   font: inherit;
   font-size: 0.875rem;
@@ -153,11 +189,11 @@ body {
 .noise-chart-toggle__option:focus-visible,
 .noise-chart-toggle__option--active {
   color: #242424;
-  background: #fb9500;
+  background: #fff;
 }
 
 .noise-chart-toggle__option:focus-visible {
-  outline: 2px solid #fb9500;
+  outline: 2px solid #cfcfcf;
   outline-offset: 2px;
 }
 

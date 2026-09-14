@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 
@@ -17,8 +17,23 @@ const chartColors = {
   background: '#FFF9F0',
 }
 
+type ChartTooltip = {
+  left: number
+  top: number
+  timestamp: string
+  min: number
+  mean: number
+  max: number
+}
+
+const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
 export function NoiseChart({ measurements, granularity, isLoading, onGranularityChange }: NoiseChartProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
+  const [tooltip, setTooltip] = useState<ChartTooltip | null>(null)
 
   useEffect(() => {
     const chart = chartRef.current
@@ -27,6 +42,7 @@ export function NoiseChart({ measurements, granularity, isLoading, onGranularity
       return
     }
 
+    const lineWidths = granularity === 'hourly' ? { range: 1, mean: 3 } : { range: 0.5, mean: 1.5 }
     const timestamps = measurements.map((measurement) => measurement.timestamp)
     const traces: Plotly.Data[] = [
       {
@@ -35,8 +51,8 @@ export function NoiseChart({ measurements, granularity, isLoading, onGranularity
         name: 'Minimum',
         x: timestamps,
         y: measurements.map((measurement) => measurement.min),
-        line: { color: chartColors.min, width: 0.5 },
-        hovertemplate: 'Min: %{y:.1f} dB<extra></extra>',
+        line: { color: chartColors.min, width: lineWidths.range },
+        hoverinfo: 'none',
       },
       {
         type: 'scatter',
@@ -44,11 +60,11 @@ export function NoiseChart({ measurements, granularity, isLoading, onGranularity
         name: 'Maximum',
         x: timestamps,
         y: measurements.map((measurement) => measurement.max),
-        line: { color: chartColors.max, width: 0.5 },
+        line: { color: chartColors.max, width: lineWidths.range },
         fill: 'tonexty',
         fillcolor: chartColors.fill,
         opacity: 0.35,
-        hovertemplate: 'Max: %{y:.1f} dB<extra></extra>',
+        hoverinfo: 'none',
       },
       {
         type: 'scatter',
@@ -56,8 +72,8 @@ export function NoiseChart({ measurements, granularity, isLoading, onGranularity
         name: 'Mean',
         x: timestamps,
         y: measurements.map((measurement) => measurement.mean),
-        line: { color: chartColors.mean, width: 1.5 },
-        hovertemplate: 'Mean: %{y:.1f} dB<extra></extra>',
+        line: { color: chartColors.mean, width: lineWidths.mean },
+        hoverinfo: 'none',
       },
     ]
 
@@ -66,18 +82,57 @@ export function NoiseChart({ measurements, granularity, isLoading, onGranularity
       paper_bgcolor: chartColors.background,
       plot_bgcolor: chartColors.background,
       margin: { t: 24, r: 24, b: 56, l: 56 },
-      hovermode: 'x unified',
+      hovermode: 'x',
       showlegend: false,
-      xaxis: { type: 'date', gridcolor: '#F0DDC2', zeroline: false },
+      xaxis: {
+        type: 'date',
+        gridcolor: '#F0DDC2',
+        showspikes: true,
+        spikemode: 'across',
+        spikesnap: 'cursor',
+        spikecolor: '#718078',
+        spikethickness: 1,
+        spikedash: 'dot',
+        zeroline: false,
+      },
       yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#F0DDC2', zeroline: false },
     }
 
-    void Plotly.newPlot(chart, traces, layout, { responsive: true, displayModeBar: false, displaylogo: false })
+    const handleHover = (event: Plotly.PlotHoverEvent) => {
+      const point = event.points[0]
+      const measurement = measurements[point.pointNumber]
+      const mouseEvent = event.event
+
+      if (!measurement || !mouseEvent) {
+        return
+      }
+
+      const chartBounds = chart.getBoundingClientRect()
+      setTooltip({
+        left: mouseEvent.clientX - chartBounds.left + 14,
+        top: mouseEvent.clientY - chartBounds.top - 12,
+        timestamp: tooltipDateFormatter.format(new Date(measurement.timestamp)),
+        min: measurement.min,
+        mean: measurement.mean,
+        max: measurement.max,
+      })
+    }
+
+    const handleUnhover = () => setTooltip(null)
+    const plot = chart as unknown as Plotly.PlotlyHTMLElement
+
+    void Plotly.newPlot(chart, traces, layout, { responsive: true, displayModeBar: false, displaylogo: false }).then(() => {
+      plot.on('plotly_hover', handleHover)
+      plot.on('plotly_unhover', handleUnhover)
+    })
 
     return () => {
+      plot.removeAllListeners('plotly_hover')
+      plot.removeAllListeners('plotly_unhover')
+      setTooltip(null)
       void Plotly.purge(chart)
     }
-  }, [measurements])
+  }, [granularity, measurements])
 
   return (
     <section className="noise-chart-panel" aria-label="Sensor noise chart">
@@ -103,6 +158,16 @@ export function NoiseChart({ measurements, granularity, isLoading, onGranularity
       </div>
       <div className="noise-chart-container">
         <div ref={chartRef} className="noise-chart" aria-label="Sensor noise over time" />
+        {tooltip && (
+          <div className="noise-chart-tooltip" style={{ left: tooltip.left, top: tooltip.top }} role="status">
+            <div className="noise-chart-tooltip__date">{tooltip.timestamp}</div>
+            <div className="noise-chart-tooltip__mean">{tooltip.mean.toFixed(1)} dB</div>
+            <div className="noise-chart-tooltip__range">
+              <span>Min {tooltip.min.toFixed(1)} dB</span>
+              <span>Max {tooltip.max.toFixed(1)} dB</span>
+            </div>
+          </div>
+        )}
         {isLoading && (
           <div className="noise-chart__loading" role="status" aria-live="polite">
             Loading {granularity} measurements...
