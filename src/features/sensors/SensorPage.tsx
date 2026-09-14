@@ -7,7 +7,9 @@ import { Link, useParams } from 'react-router-dom'
 import { fetchLocation } from '../locations/locations.api.ts'
 import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
+import { LatestNoiseReading } from './LatestNoiseReading.tsx'
 import { NoiseChart } from './NoiseChart.tsx'
+import { SensorLocationMap } from './SensorLocationMap.tsx'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
@@ -155,6 +157,10 @@ function SensorPage() {
             {measurements.length > 0 && (
               <>
                 <p>{measurements.length} measurements loaded.</p>
+                <div className="sensor-insights">
+                  <LatestNoiseReading measurements={measurements} />
+                  <SensorLocationMap location={location} />
+                </div>
                 <NoiseChart
                   measurements={measurements}
                   granularity={granularity}
