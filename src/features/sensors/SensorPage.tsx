@@ -7,6 +7,7 @@ import { Link, useParams } from 'react-router-dom'
 import { fetchLocation } from '../locations/locations.api.ts'
 import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseMeasurement } from './sensors.api.ts'
+import { NoiseChart } from './NoiseChart.tsx'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
@@ -126,7 +127,12 @@ function SensorPage() {
             <p>Latest hourly mean: {location.hourMean.toFixed(1)} dB</p>
             {isNoiseLoading && <p>Loading sensor measurements...</p>}
             {noiseError && <p role="alert">{noiseError}</p>}
-            {!isNoiseLoading && !noiseError && <p>{measurements.length} measurements loaded.</p>}
+            {!isNoiseLoading && !noiseError && measurements.length > 0 && (
+              <>
+                <p>{measurements.length} measurements loaded.</p>
+                <NoiseChart measurements={measurements} />
+              </>
+            )}
           </>
         )}
         <Link to="/locations">Back to locations</Link>

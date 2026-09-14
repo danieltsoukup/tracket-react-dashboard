@@ -100,6 +100,32 @@ body {
   text-transform: uppercase;
 }
 
+.noise-chart {
+  width: 100%;
+  min-height: 420px;
+  margin: 32px 0;
+  background: #fff9f0;
+}
+
+@media (max-width: 640px) {
+  .sensor-header__actions {
+    gap: 12px;
+  }
+
+  .sensor-header__actions a {
+    font-size: 0.75rem;
+  }
+
+  .sensor-header__actions a:nth-child(2),
+  .sensor-header__actions a:nth-child(3) {
+    display: none;
+  }
+
+  .noise-chart {
+    min-height: 360px;
+  }
+}
+
 .location-map {
   height: 100%;
   width: 100%;
