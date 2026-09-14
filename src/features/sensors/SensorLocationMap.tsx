@@ -32,7 +32,7 @@ export function SensorLocationMap({ location }: SensorLocationMapProps) {
     const radius = L.circle(position, {
       color,
       fillColor: color,
-      radius: location.radius,
+      radius: Math.max(50, location.radius),
       fillOpacity: 0.25,
       weight: 2,
     }).addTo(map)

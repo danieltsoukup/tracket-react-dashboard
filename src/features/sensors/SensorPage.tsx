@@ -3,18 +3,20 @@
  * @description Page for displaying sensor details.
  */
 import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { fetchLocation } from '../locations/locations.api.ts'
 import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
 import { LatestNoiseReading } from './LatestNoiseReading.tsx'
 import { NoiseChart } from './NoiseChart.tsx'
 import { SensorLocationMap } from './SensorLocationMap.tsx'
+import { SensorPanel } from './SensorPanel.tsx'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
   const [location, setLocation] = useState<Location | null>(null)
   const [measurements, setMeasurements] = useState<NoiseMeasurement[]>([])
+  const [hourlyMeasurements, setHourlyMeasurements] = useState<NoiseMeasurement[]>([])
   const [granularity, setGranularity] = useState<NoiseGranularity>('hourly')
   const [isLocationLoading, setIsLocationLoading] = useState(true)
   const [isNoiseLoading, setIsNoiseLoading] = useState(false)
@@ -23,6 +25,7 @@ function SensorPage() {
   const measurementsCache = useRef(new Map<string, NoiseMeasurement[]>())
   const parsedSensorId = Number(sensorId)
   const hasValidSensorId = Number.isInteger(parsedSensorId) && parsedSensorId > 0
+  const isInitialLoading = isLocationLoading || (location !== null && measurements.length === 0 && isNoiseLoading)
 
   useEffect(() => {
     /**
@@ -73,6 +76,7 @@ function SensorPage() {
   useEffect(() => {
     if (!hasValidSensorId || !location || location.id !== parsedSensorId) {
       setMeasurements([])
+      setHourlyMeasurements([])
       setIsNoiseLoading(false)
       return
     }
@@ -84,6 +88,9 @@ function SensorPage() {
 
     if (cachedMeasurements) {
       setMeasurements(cachedMeasurements)
+      if (granularity === 'hourly') {
+        setHourlyMeasurements(cachedMeasurements)
+      }
       setIsNoiseLoading(false)
       setNoiseError(null)
       return
@@ -101,6 +108,9 @@ function SensorPage() {
         if (isCurrentRequest) {
           measurementsCache.current.set(cacheKey, loadedMeasurements)
           setMeasurements(loadedMeasurements)
+          if (granularity === 'hourly') {
+            setHourlyMeasurements(loadedMeasurements)
+          }
           setIsNoiseLoading(false)
         }
       })
@@ -142,24 +152,20 @@ function SensorPage() {
       </header>
 
       <section className="sensor-page__content">
-        {isLocationLoading && <p>Loading sensor location...</p>}
+        {isInitialLoading && !locationError && <p className="sensor-page__loading" role="status">Loading sensor...</p>}
         {locationError && <p role="alert">{locationError}</p>}
-        {!isLocationLoading && !locationError && location && (
+        {!isInitialLoading && !isLocationLoading && !locationError && location && (
           <>
-            <p className="sensor-page__eyebrow">Sensor {location.id}</p>
-            <h1>{location.label}</h1>
-            <p>
-              {location.latitude}, {location.longitude}
-            </p>
-            <p>Latest hourly mean: {location.hourMean.toFixed(1)} dB</p>
-            {isNoiseLoading && <p>Loading sensor measurements...</p>}
             {noiseError && <p role="alert">{noiseError}</p>}
             {measurements.length > 0 && (
               <>
-                <p>{measurements.length} measurements loaded.</p>
                 <div className="sensor-insights">
-                  <LatestNoiseReading measurements={measurements} />
-                  <SensorLocationMap location={location} />
+                  <SensorPanel title="Latest hourly recording">
+                    <LatestNoiseReading measurements={hourlyMeasurements} />
+                  </SensorPanel>
+                  <SensorPanel title={location.label}>
+                    <SensorLocationMap location={location} />
+                  </SensorPanel>
                 </div>
                 <NoiseChart
                   measurements={measurements}
@@ -171,7 +177,6 @@ function SensorPage() {
             )}
           </>
         )}
-        <Link to="/locations">Back to locations</Link>
       </section>
     </main>
   )

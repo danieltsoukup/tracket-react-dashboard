@@ -1,11 +1,22 @@
 import type { NoiseMeasurement } from './sensors.api.ts'
 
+const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
 type LatestNoiseReadingProps = {
   measurements: NoiseMeasurement[]
 }
 
 function getChronologicalMeasurements(measurements: NoiseMeasurement[]) {
   return [...measurements].sort((first, second) => first.timestamp.localeCompare(second.timestamp))
+}
+
+function formatMeasurementDate(timestamp: string) {
+  const date = new Date(timestamp)
+
+  return Number.isNaN(date.getTime()) ? timestamp : measurementDateFormatter.format(date)
 }
 
 export function LatestNoiseReading({ measurements }: LatestNoiseReadingProps) {
@@ -28,7 +39,7 @@ export function LatestNoiseReading({ measurements }: LatestNoiseReadingProps) {
 
   return (
     <section className="latest-noise-reading" aria-label="Latest hourly noise reading">
-      <p className="sensor-panel__eyebrow">Latest hourly recording</p>
+      <p className="sensor-panel__eyebrow">{formatMeasurementDate(latestMeasurement.timestamp)}</p>
       <div className="latest-noise-reading__value">{latestMeasurement.mean.toFixed(1)} <span>dB</span></div>
       {percentageChange !== null && (
         <p className={`latest-noise-reading__change latest-noise-reading__change--${direction}`}>

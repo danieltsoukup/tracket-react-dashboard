@@ -93,11 +93,12 @@ body {
   padding: 48px 24px;
 }
 
-.sensor-page__eyebrow {
+.sensor-page__loading {
+  display: grid;
+  min-height: 40vh;
+  place-items: center;
   color: #718078;
-  font-size: 0.875rem;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .sensor-insights {
@@ -107,9 +108,26 @@ body {
   margin: 28px 0 8px;
 }
 
+.sensor-panel {
+  min-width: 0;
+}
+
+.sensor-panel__title {
+  margin: 0 0 8px;
+  color: #718078;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sensor-panel__body {
+  min-height: 285px;
+}
+
 .latest-noise-reading,
 .sensor-location-map {
-  min-height: 190px;
+  min-height: 285px;
   box-sizing: border-box;
   background: #fff;
   border: 1px solid #eadfce;
