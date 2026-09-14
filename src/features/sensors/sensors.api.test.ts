@@ -34,6 +34,32 @@ describe('fetchSensorNoise', () => {
     )
   })
 
+  it('uses the latest timestamp for a four-day range and fetches every page', async () => {
+    const fullPage = Array.from({ length: 1000 }, () => validMeasurement)
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ measurements: fullPage }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ measurements: [validMeasurement] }), { status: 200 }))
+
+    await expect(
+      fetchSensorNoise(572250, {
+        granularity: 'hourly',
+        latestTimestamp: '2026-09-13T12:00:00.000Z',
+      }),
+    ).resolves.toEqual([...fullPage, validMeasurement])
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      `${SENSOR_NOISE_API_URL}/572250/noise?granularity=hourly&start=2026-09-09T12%3A00%3A00.000Z&end=2026-09-13T12%3A00%3A00.000Z&page=1`,
+      {},
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      `${SENSOR_NOISE_API_URL}/572250/noise?granularity=hourly&start=2026-09-09T12%3A00%3A00.000Z&end=2026-09-13T12%3A00%3A00.000Z&page=2`,
+      {},
+    )
+  })
+
   it('throws the response status when the API request fails', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 503 }))
 

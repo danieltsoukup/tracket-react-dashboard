@@ -87,5 +87,6 @@ export async function fetchLocation(locationId: number, signal?: AbortSignal): P
     throw new Error('The location API returned an unexpected response.')
   }
 
+  console.log(`Fetched location ${locationId}: ${data.locations[0].label}`)
   return data.locations[0]
 }

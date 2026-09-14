@@ -6,23 +6,34 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { fetchLocation } from '../locations/locations.api.ts'
 import type { Location } from '../locations/locations.types.ts'
+import { fetchSensorNoise, type NoiseMeasurement } from './sensors.api.ts'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
   const [location, setLocation] = useState<Location | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [measurements, setMeasurements] = useState<NoiseMeasurement[]>([])
+  const [isLocationLoading, setIsLocationLoading] = useState(true)
+  const [isNoiseLoading, setIsNoiseLoading] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const [noiseError, setNoiseError] = useState<string | null>(null)
   const parsedSensorId = Number(sensorId)
   const hasValidSensorId = Number.isInteger(parsedSensorId) && parsedSensorId > 0
 
   useEffect(() => {
+    /**
+     * Fetches the sensor location data when the component mounts or when the sensorId changes.
+     */
     const controller = new AbortController()
     let isCurrentRequest = true
+    let hasLoadedLocation = false
 
     if (!hasValidSensorId) {
       setLocation(null)
-      setError('The sensor ID is invalid.')
-      setIsLoading(false)
+      setMeasurements([])
+      setLocationError('The sensor ID is invalid.')
+      setNoiseError(null)
+      setIsLocationLoading(false)
+      setIsNoiseLoading(false)
 
       return () => {
         isCurrentRequest = false
@@ -30,13 +41,34 @@ function SensorPage() {
       }
     }
 
-    setIsLoading(true)
-    setError(null)
+    setLocation(null)
+    setMeasurements([])
+    setIsLocationLoading(true)
+    setIsNoiseLoading(false)
+    setLocationError(null)
+    setNoiseError(null)
 
     fetchLocation(parsedSensorId, controller.signal)
       .then((loadedLocation) => {
-        if (isCurrentRequest) {
-          setLocation(loadedLocation)
+        if (!isCurrentRequest) {
+          return
+        }
+
+        setLocation(loadedLocation)
+        hasLoadedLocation = true
+        setIsLocationLoading(false)
+        setIsNoiseLoading(true)
+
+        return fetchSensorNoise(parsedSensorId, {
+          granularity: 'raw',
+          latestTimestamp: loadedLocation.latestTimestamp,
+          signal: controller.signal,
+        })
+      })
+      .then((loadedMeasurements) => {
+        if (isCurrentRequest && loadedMeasurements) {
+          setMeasurements(loadedMeasurements)
+          setIsNoiseLoading(false)
         }
       })
       .catch((loadError: unknown) => {
@@ -44,12 +76,12 @@ function SensorPage() {
           return
         }
 
-        setLocation(null)
-        setError(loadError instanceof Error ? loadError.message : 'Unable to load sensor location.')
-      })
-      .finally(() => {
-        if (isCurrentRequest) {
-          setIsLoading(false)
+        if (!hasLoadedLocation) {
+          setLocationError(loadError instanceof Error ? loadError.message : 'Unable to load sensor location.')
+          setIsLocationLoading(false)
+        } else {
+          setNoiseError(loadError instanceof Error ? loadError.message : 'Unable to load sensor measurements.')
+          setIsNoiseLoading(false)
         }
       })
 
@@ -82,9 +114,9 @@ function SensorPage() {
       </header>
 
       <section className="sensor-page__content">
-        {isLoading && <p>Loading sensor location...</p>}
-        {error && <p role="alert">{error}</p>}
-        {!isLoading && !error && location && (
+        {isLocationLoading && <p>Loading sensor location...</p>}
+        {locationError && <p role="alert">{locationError}</p>}
+        {!isLocationLoading && !locationError && location && (
           <>
             <p className="sensor-page__eyebrow">Sensor {location.id}</p>
             <h1>{location.label}</h1>
@@ -92,6 +124,9 @@ function SensorPage() {
               {location.latitude}, {location.longitude}
             </p>
             <p>Latest hourly mean: {location.hourMean.toFixed(1)} dB</p>
+            {isNoiseLoading && <p>Loading sensor measurements...</p>}
+            {noiseError && <p role="alert">{noiseError}</p>}
+            {!isNoiseLoading && !noiseError && <p>{measurements.length} measurements loaded.</p>}
           </>
         )}
         <Link to="/locations">Back to locations</Link>
