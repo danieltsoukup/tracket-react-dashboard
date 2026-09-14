@@ -54,3 +54,35 @@ Example:
 ```
 
 - sensors: TBD
+
+Return measurements for the given location.  The timestamps will be returned for the timezone where the device is located.
+
+HTTP Get Parameters
+* granularity - “raw”, “hourly”, “life-time”
+* start - Optional start time in format recognized by strtotime (e.g. 2024-03-19 14:00:12).
+* end - Optional end time in format recognized by strtotime (e.g. 2024-03-19 14:00:12).
+* page - Optional zero-based  page index into long result sets (100 results per page).
+
+Example HTTP Requests
+https://api.tracket.info/v1/locations/572250/noise
+https://api.tracket.info/v1/locations/572250/noise?granularity=hourly
+https://api.tracket.info/v1/locations/572250/noise?granularity=life-time
+
+```
+{
+  "measurements": [
+    {
+      "timestamp": "2024-02-04T23:32:58-04:00",
+      "min": 48.605,
+      "max": 62.834,
+      "mean": 49.101
+    },
+    {
+      "timestamp": "2024-02-04T23:37:59-04:00",
+      "min": 48.667,
+      "max": 50.021,
+      "mean": 49.072
+    },
+    ...
+}
+```
