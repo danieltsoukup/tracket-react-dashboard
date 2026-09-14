@@ -18,8 +18,9 @@ import {
   getLocationHealth,
   type LocationHealth,
 } from './locations.config.ts'
-import { fetchLocations, type Location } from './locations.api.ts'
+import { fetchLocations } from './locations.api.ts'
 import { LocationsOverlay } from './LocationsOverlay.tsx'
+import type { Location } from './locations.types.ts'
 
 type LocationMarker = L.CircleMarker & {
   locationActive: boolean

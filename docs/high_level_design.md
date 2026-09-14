@@ -28,6 +28,7 @@ Frontend-only web application to present location and time-series data in a simp
 ## Data APIs
 
 - locations: `https://api.tracket.info/v1/locations`
+- location info for single location: `https://api.tracket.info/v1/locations/572227`
 
 Example:
 

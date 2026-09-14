@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { LOCATIONS_API_URL, fetchLocations, type Location } from './locations.api.ts'
+import { fetchLocation, fetchLocations, LOCATIONS_API_URL } from './locations.api.ts'
+import type { Location } from './locations.types.ts'
 
 const validLocation: Location = {
   id: 1,
@@ -53,5 +54,31 @@ describe('fetchLocations', () => {
     )
 
     await expect(fetchLocations()).rejects.toThrow('The locations API returned an unexpected response.')
+  })
+})
+
+describe('fetchLocation', () => {
+  it('returns one location from the detail API response', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ locations: [validLocation], query: 'ignored' }), { status: 200 }),
+    )
+    const signal = new AbortController().signal
+
+    await expect(fetchLocation(1, signal)).resolves.toEqual(validLocation)
+    expect(fetchMock).toHaveBeenCalledWith(`${LOCATIONS_API_URL}/1`, { signal })
+  })
+
+  it('throws the response status when the detail request fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 404 }))
+
+    await expect(fetchLocation(1)).rejects.toThrow('Unable to load location (404)')
+  })
+
+  it('rejects an empty or multi-location detail response', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ locations: [] }), { status: 200 }),
+    )
+
+    await expect(fetchLocation(1)).rejects.toThrow('The location API returned an unexpected response.')
   })
 })
