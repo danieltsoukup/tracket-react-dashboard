@@ -57,7 +57,7 @@ export async function fetchSensorNoise(sensorId: number, options: NoiseQueryOpti
   const start =
     queryOptions.start ?? (end ? new Date(new Date(end).getTime() - 4 * 24 * 60 * 60 * 1000).toISOString() : undefined)
   const measurements: NoiseMeasurement[] = []
-  let page = queryOptions.page ?? 1
+  let page = queryOptions.page ?? 0
 
   while (true) {
     const query = new URLSearchParams()

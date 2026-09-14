@@ -50,12 +50,12 @@ describe('fetchSensorNoise', () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
-      `${SENSOR_NOISE_API_URL}/572250/noise?granularity=hourly&start=2026-09-09T12%3A00%3A00.000Z&end=2026-09-13T12%3A00%3A00.000Z&page=1`,
+      `${SENSOR_NOISE_API_URL}/572250/noise?granularity=hourly&start=2026-09-09T12%3A00%3A00.000Z&end=2026-09-13T12%3A00%3A00.000Z&page=0`,
       {},
     )
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      `${SENSOR_NOISE_API_URL}/572250/noise?granularity=hourly&start=2026-09-09T12%3A00%3A00.000Z&end=2026-09-13T12%3A00%3A00.000Z&page=2`,
+      `${SENSOR_NOISE_API_URL}/572250/noise?granularity=hourly&start=2026-09-09T12%3A00%3A00.000Z&end=2026-09-13T12%3A00%3A00.000Z&page=1`,
       {},
     )
   })

@@ -2,39 +2,37 @@
  * @file SensorPage.tsx
  * @description Page for displaying sensor details.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { fetchLocation } from '../locations/locations.api.ts'
 import type { Location } from '../locations/locations.types.ts'
-import { fetchSensorNoise, type NoiseMeasurement } from './sensors.api.ts'
+import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
 import { NoiseChart } from './NoiseChart.tsx'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
   const [location, setLocation] = useState<Location | null>(null)
   const [measurements, setMeasurements] = useState<NoiseMeasurement[]>([])
+  const [granularity, setGranularity] = useState<NoiseGranularity>('hourly')
   const [isLocationLoading, setIsLocationLoading] = useState(true)
   const [isNoiseLoading, setIsNoiseLoading] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [noiseError, setNoiseError] = useState<string | null>(null)
+  const measurementsCache = useRef(new Map<string, NoiseMeasurement[]>())
   const parsedSensorId = Number(sensorId)
   const hasValidSensorId = Number.isInteger(parsedSensorId) && parsedSensorId > 0
 
   useEffect(() => {
     /**
-     * Fetches the sensor location data when the component mounts or when the sensorId changes.
+     * Fetch the sensor location when the component mounts or when the sensorId changes.
      */
     const controller = new AbortController()
     let isCurrentRequest = true
-    let hasLoadedLocation = false
 
     if (!hasValidSensorId) {
       setLocation(null)
-      setMeasurements([])
       setLocationError('The sensor ID is invalid.')
-      setNoiseError(null)
       setIsLocationLoading(false)
-      setIsNoiseLoading(false)
 
       return () => {
         isCurrentRequest = false
@@ -43,11 +41,8 @@ function SensorPage() {
     }
 
     setLocation(null)
-    setMeasurements([])
     setIsLocationLoading(true)
-    setIsNoiseLoading(false)
     setLocationError(null)
-    setNoiseError(null)
 
     fetchLocation(parsedSensorId, controller.signal)
       .then((loadedLocation) => {
@@ -56,18 +51,53 @@ function SensorPage() {
         }
 
         setLocation(loadedLocation)
-        hasLoadedLocation = true
         setIsLocationLoading(false)
-        setIsNoiseLoading(true)
-
-        return fetchSensorNoise(parsedSensorId, {
-          granularity: 'raw',
-          latestTimestamp: loadedLocation.latestTimestamp,
-          signal: controller.signal,
-        })
       })
+      .catch((loadError: unknown) => {
+        if (!isCurrentRequest || (loadError instanceof DOMException && loadError.name === 'AbortError')) {
+          return
+        }
+
+        setLocationError(loadError instanceof Error ? loadError.message : 'Unable to load sensor location.')
+        setIsLocationLoading(false)
+      })
+
+    return () => {
+      isCurrentRequest = false
+      controller.abort()
+    }
+  }, [hasValidSensorId, parsedSensorId])
+
+  useEffect(() => {
+    if (!hasValidSensorId || !location || location.id !== parsedSensorId) {
+      setMeasurements([])
+      setIsNoiseLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    let isCurrentRequest = true
+    const cacheKey = `${parsedSensorId}:${location.latestTimestamp}:${granularity}`
+    const cachedMeasurements = measurementsCache.current.get(cacheKey)
+
+    if (cachedMeasurements) {
+      setMeasurements(cachedMeasurements)
+      setIsNoiseLoading(false)
+      setNoiseError(null)
+      return
+    }
+
+    setIsNoiseLoading(true)
+    setNoiseError(null)
+
+    fetchSensorNoise(parsedSensorId, {
+      granularity,
+      latestTimestamp: location.latestTimestamp,
+      signal: controller.signal,
+    })
       .then((loadedMeasurements) => {
-        if (isCurrentRequest && loadedMeasurements) {
+        if (isCurrentRequest) {
+          measurementsCache.current.set(cacheKey, loadedMeasurements)
           setMeasurements(loadedMeasurements)
           setIsNoiseLoading(false)
         }
@@ -77,20 +107,15 @@ function SensorPage() {
           return
         }
 
-        if (!hasLoadedLocation) {
-          setLocationError(loadError instanceof Error ? loadError.message : 'Unable to load sensor location.')
-          setIsLocationLoading(false)
-        } else {
-          setNoiseError(loadError instanceof Error ? loadError.message : 'Unable to load sensor measurements.')
-          setIsNoiseLoading(false)
-        }
+        setNoiseError(loadError instanceof Error ? loadError.message : 'Unable to load sensor measurements.')
+        setIsNoiseLoading(false)
       })
 
     return () => {
       isCurrentRequest = false
       controller.abort()
     }
-  }, [hasValidSensorId, parsedSensorId])
+  }, [granularity, hasValidSensorId, location, parsedSensorId])
 
   return (
     <main className="sensor-page">
@@ -127,10 +152,15 @@ function SensorPage() {
             <p>Latest hourly mean: {location.hourMean.toFixed(1)} dB</p>
             {isNoiseLoading && <p>Loading sensor measurements...</p>}
             {noiseError && <p role="alert">{noiseError}</p>}
-            {!isNoiseLoading && !noiseError && measurements.length > 0 && (
+            {measurements.length > 0 && (
               <>
                 <p>{measurements.length} measurements loaded.</p>
-                <NoiseChart measurements={measurements} />
+                <NoiseChart
+                  measurements={measurements}
+                  granularity={granularity}
+                  isLoading={isNoiseLoading}
+                  onGranularityChange={setGranularity}
+                />
               </>
             )}
           </>

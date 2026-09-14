@@ -103,8 +103,62 @@ body {
 .noise-chart {
   width: 100%;
   min-height: 420px;
-  margin: 32px 0;
   background: #fff9f0;
+}
+
+.noise-chart-container {
+  position: relative;
+}
+
+.noise-chart__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #24323a;
+  background: rgb(255 249 240 / 78%);
+  font-weight: 700;
+}
+
+.noise-chart-panel {
+  margin: 32px 0;
+}
+
+.noise-chart-panel__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.noise-chart-toggle {
+  display: inline-flex;
+  padding: 3px;
+  background: #242424;
+  border-radius: 4px;
+}
+
+.noise-chart-toggle__option {
+  padding: 8px 14px;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.noise-chart-toggle__option:hover,
+.noise-chart-toggle__option:focus-visible,
+.noise-chart-toggle__option--active {
+  color: #242424;
+  background: #fb9500;
+}
+
+.noise-chart-toggle__option:focus-visible {
+  outline: 2px solid #fb9500;
+  outline-offset: 2px;
 }
 
 @media (max-width: 640px) {

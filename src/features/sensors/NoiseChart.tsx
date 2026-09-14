@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist'
-import type { NoiseMeasurement } from './sensors.api.ts'
+import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 
 type NoiseChartProps = {
   measurements: NoiseMeasurement[]
+  granularity: NoiseGranularity
+  isLoading: boolean
+  onGranularityChange: (granularity: NoiseGranularity) => void
 }
 
 const chartColors = {
@@ -14,7 +17,7 @@ const chartColors = {
   background: '#FFF9F0',
 }
 
-export function NoiseChart({ measurements }: NoiseChartProps) {
+export function NoiseChart({ measurements, granularity, isLoading, onGranularityChange }: NoiseChartProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -76,5 +79,36 @@ export function NoiseChart({ measurements }: NoiseChartProps) {
     }
   }, [measurements])
 
-  return <div ref={chartRef} className="noise-chart" aria-label="Sensor noise over time" />
+  return (
+    <section className="noise-chart-panel" aria-label="Sensor noise chart">
+      <div className="noise-chart-panel__toolbar">
+        <div className="noise-chart-toggle" role="group" aria-label="Measurement granularity">
+          <button
+            type="button"
+            className={granularity === 'hourly' ? 'noise-chart-toggle__option noise-chart-toggle__option--active' : 'noise-chart-toggle__option'}
+            aria-pressed={granularity === 'hourly'}
+            onClick={() => onGranularityChange('hourly')}
+          >
+            Hourly
+          </button>
+          <button
+            type="button"
+            className={granularity === 'raw' ? 'noise-chart-toggle__option noise-chart-toggle__option--active' : 'noise-chart-toggle__option'}
+            aria-pressed={granularity === 'raw'}
+            onClick={() => onGranularityChange('raw')}
+          >
+            Raw
+          </button>
+        </div>
+      </div>
+      <div className="noise-chart-container">
+        <div ref={chartRef} className="noise-chart" aria-label="Sensor noise over time" />
+        {isLoading && (
+          <div className="noise-chart__loading" role="status" aria-live="polite">
+            Loading {granularity} measurements...
+          </div>
+        )}
+      </div>
+    </section>
+  )
 }
