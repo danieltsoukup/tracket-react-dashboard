@@ -346,6 +346,19 @@ body {
   color: #a43d32;
 }
 
+.map-status__all-off {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  z-index: 1000;
+  margin: 0;
+  color: #5f5f5f;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
 .map-status__counts {
   display: flex;
   align-items: center;

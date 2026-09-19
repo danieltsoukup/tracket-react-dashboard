@@ -221,6 +221,9 @@ export function LocationsOverlay({
         error={error}
         onOpenInfo={() => setIsNoiseInfoOpen(true)}
       />
+      {!selectedStatuses.unhealthy && !selectedStatuses.active && !selectedStatuses.inactive && (
+        <p className="map-status__all-off">All locations toggled off</p>
+      )}
       <NoiseInfoDialog isOpen={isNoiseInfoOpen} onClose={() => setIsNoiseInfoOpen(false)} />
     </>
   )
