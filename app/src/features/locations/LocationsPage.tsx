@@ -64,8 +64,6 @@ function LocationsPage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.MarkerClusterGroup | null>(null)
-  const inactiveLayerRef = useRef<L.LayerGroup | null>(null)
-  const inactiveMarkersRef = useRef<LocationMarker[]>([])
 
   useEffect(() => {
     /**
@@ -144,57 +142,38 @@ function LocationsPage() {
       },
     }
     const markers = L.markerClusterGroup(clusterOptions).addTo(map)
-    const inactiveLayer = L.layerGroup().addTo(map)
-
-    const handleInactiveLayerAdd = (event: L.LayersControlEvent) => {
-      if (event.layer === inactiveLayer) {
-        markers.addLayers(inactiveMarkersRef.current)
-      }
-    }
-
-    const handleInactiveLayerRemove = (event: L.LayersControlEvent) => {
-      if (event.layer === inactiveLayer) {
-        markers.removeLayers(inactiveMarkersRef.current)
-      }
-    }
-
-    L.control.layers(undefined, { 'Inactive locations': inactiveLayer }).addTo(map)
-    map.on('overlayadd', handleInactiveLayerAdd)
-    map.on('overlayremove', handleInactiveLayerRemove)
 
     mapRef.current = map
     markersRef.current = markers
-    inactiveLayerRef.current = inactiveLayer
 
     return () => {
-      map.off('overlayadd', handleInactiveLayerAdd)
-      map.off('overlayremove', handleInactiveLayerRemove)
       map.remove()
       mapRef.current = null
       markersRef.current = null
-      inactiveLayerRef.current = null
-      inactiveMarkersRef.current = []
     }
   }, [])
 
   useEffect(() => {
     /**
-     * Update the markers on the map based on the current list of locations.
+     * Update the markers on the map based on the current list of locations and selected health filters.
      */
     const map = mapRef.current
     const markers = markersRef.current
-    const inactiveLayer = inactiveLayerRef.current
 
-    if (!map || !markers || !inactiveLayer) {
+    if (!map || !markers) {
       return
     }
 
     markers.clearLayers()
-    inactiveMarkersRef.current = []
-    const showInactiveLocations = map.hasLayer(inactiveLayer)
 
     const bounds = L.latLngBounds([])
     locations.forEach((location) => {
+      const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
+
+      if (!selectedStatuses[health]) {
+        return
+      }
+
       const position: L.LatLngExpression = [location.latitude, location.longitude]
       const color = getLocationColor(location.active, location.hourEnd, location.hourMean)
 
@@ -207,9 +186,6 @@ function LocationsPage() {
       marker.locationActive = location.active
       marker.locationHourEnd = location.hourEnd
       marker.locationHourMean = location.hourMean
-      if (!location.active) {
-        inactiveMarkersRef.current.push(marker)
-      }
 
       marker
         .bindTooltip(getLocationInfo(location), {
@@ -220,17 +196,10 @@ function LocationsPage() {
         .on('click', () => window.open(`/locations/${location.id}`, '_blank', 'noopener,noreferrer'))
         .addTo(markers)
 
-      if (!location.active && !showInactiveLocations) {
-        markers.removeLayer(marker)
-      }
-
       bounds.extend(position)
     })
 
-    if (locations.length > 0) {
-      map.fitBounds(bounds, { padding: [32, 32], maxZoom: 12 })
-    }
-  }, [locations])
+  }, [locations, selectedStatuses])
 
   function resetMapView() {
     mapRef.current?.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
