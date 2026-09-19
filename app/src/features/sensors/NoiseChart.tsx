@@ -6,6 +6,10 @@ type NoiseChartProps = {
   measurements: NoiseMeasurement[]
   granularity: NoiseGranularity
   isLoading: boolean
+  start: string
+  end: string
+  onStartChange: (value: string) => void
+  onEndChange: (value: string) => void
   onGranularityChange: (granularity: NoiseGranularity) => void
 }
 
@@ -31,7 +35,16 @@ const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: 'short',
 })
 
-export function NoiseChart({ measurements, granularity, isLoading, onGranularityChange }: NoiseChartProps) {
+export function NoiseChart({
+  measurements,
+  granularity,
+  isLoading,
+  start,
+  end,
+  onStartChange,
+  onEndChange,
+  onGranularityChange,
+}: NoiseChartProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
   const [tooltip, setTooltip] = useState<ChartTooltip | null>(null)
 
@@ -137,6 +150,26 @@ export function NoiseChart({ measurements, granularity, isLoading, onGranularity
   return (
     <section className="noise-chart-panel" aria-label="Sensor noise chart">
       <div className="noise-chart-panel__toolbar">
+        <div className="noise-chart-range" aria-label="Chart date range">
+          <label className="noise-chart-range__field">
+            <span>From</span>
+            <input
+              type="date"
+              value={start}
+              max={end || undefined}
+              onChange={(event) => onStartChange(event.target.value)}
+            />
+          </label>
+          <label className="noise-chart-range__field">
+            <span>To</span>
+            <input
+              type="date"
+              value={end}
+              min={start || undefined}
+              onChange={(event) => onEndChange(event.target.value)}
+            />
+          </label>
+        </div>
         <div className="noise-chart-toggle" role="group" aria-label="Measurement granularity">
           <button
             type="button"

@@ -12,12 +12,31 @@ import { NoiseChart } from './NoiseChart.tsx'
 import { SensorLocationMap } from './SensorLocationMap.tsx'
 import { SensorPanel } from './SensorPanel.tsx'
 
+const NOISE_RANGE_MS = 4 * 24 * 60 * 60 * 1000
+
+function toDateTimeLocalValue(timestamp: string) {
+  const date = new Date(timestamp)
+
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  const offset = date.getTimezoneOffset() * 60 * 1000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10)
+}
+
+function toApiTimestamp(value: string, time: '00:00:00' | '23:59:00') {
+  return value ? new Date(`${value}T${time}`).toISOString() : undefined
+}
+
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
   const [location, setLocation] = useState<Location | null>(null)
   const [measurements, setMeasurements] = useState<NoiseMeasurement[]>([])
   const [hourlyMeasurements, setHourlyMeasurements] = useState<NoiseMeasurement[]>([])
   const [granularity, setGranularity] = useState<NoiseGranularity>('hourly')
+  const [chartStart, setChartStart] = useState('')
+  const [chartEnd, setChartEnd] = useState('')
   const [isLocationLoading, setIsLocationLoading] = useState(true)
   const [isNoiseLoading, setIsNoiseLoading] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
@@ -56,6 +75,9 @@ function SensorPage() {
         }
 
         setLocation(loadedLocation)
+        const end = new Date(loadedLocation.latestTimestamp)
+        setChartEnd(toDateTimeLocalValue(loadedLocation.latestTimestamp))
+        setChartStart(toDateTimeLocalValue(new Date(end.getTime() - NOISE_RANGE_MS).toISOString()))
         setIsLocationLoading(false)
       })
       .catch((loadError: unknown) => {
@@ -81,9 +103,17 @@ function SensorPage() {
       return
     }
 
+    if (!chartStart || !chartEnd || chartStart > chartEnd) {
+      setMeasurements([])
+      setIsNoiseLoading(false)
+      return
+    }
+
     const controller = new AbortController()
     let isCurrentRequest = true
-    const cacheKey = `${parsedSensorId}:${location.latestTimestamp}:${granularity}`
+    const start = toApiTimestamp(chartStart, '00:00:00')
+    const end = toApiTimestamp(chartEnd, '23:59:00')
+    const cacheKey = `${parsedSensorId}:${location.latestTimestamp}:${granularity}:${start}:${end}`
     const cachedMeasurements = measurementsCache.current.get(cacheKey)
 
     if (cachedMeasurements) {
@@ -101,7 +131,8 @@ function SensorPage() {
 
     fetchSensorNoise(parsedSensorId, {
       granularity,
-      latestTimestamp: location.latestTimestamp,
+      start,
+      end,
       signal: controller.signal,
     })
       .then((loadedMeasurements) => {
@@ -127,7 +158,7 @@ function SensorPage() {
       isCurrentRequest = false
       controller.abort()
     }
-  }, [granularity, hasValidSensorId, location, parsedSensorId])
+  }, [chartEnd, chartStart, granularity, hasValidSensorId, location, parsedSensorId])
 
   return (
     <main className="sensor-page">
@@ -171,6 +202,10 @@ function SensorPage() {
                   measurements={measurements}
                   granularity={granularity}
                   isLoading={isNoiseLoading}
+                  start={chartStart}
+                  end={chartEnd}
+                  onStartChange={setChartStart}
+                  onEndChange={setChartEnd}
                   onGranularityChange={setGranularity}
                 />
               </>

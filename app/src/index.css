@@ -263,8 +263,46 @@ body {
 
 .noise-chart-panel__toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 12px;
+}
+
+.noise-chart-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.noise-chart-range__field {
+  display: grid;
+  gap: 4px;
+  color: #718078;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.noise-chart-range__field input {
+  box-sizing: border-box;
+  min-height: 38px;
+  padding: 7px 9px;
+  color: #24323a;
+  background: #fff;
+  border: 1px solid #eadfce;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.noise-chart-range__field input:focus-visible {
+  outline: 2px solid #fb9500;
+  outline-offset: 2px;
 }
 
 .noise-chart-toggle {
@@ -314,6 +352,27 @@ body {
 
   .noise-chart {
     min-height: 360px;
+  }
+
+  .noise-chart-panel__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .noise-chart-range {
+    justify-content: space-between;
+  }
+
+  .noise-chart-range__field {
+    flex: 1;
+  }
+
+  .noise-chart-range__field input {
+    width: 100%;
+  }
+
+  .noise-chart-toggle {
+    align-self: flex-end;
   }
 
   .sensor-insights {
