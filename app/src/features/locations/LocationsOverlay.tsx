@@ -211,19 +211,21 @@ export function LocationsOverlay({
   return (
     <>
       <MapResetButton onResetMap={onResetMap} />
-      <LocationStatus
-        unhealthy={unhealthy}
-        active={active}
-        inactive={inactive}
-        selectedStatuses={selectedStatuses}
-        onToggleStatus={onToggleStatus}
-        isLoading={isLoading}
-        error={error}
-        onOpenInfo={() => setIsNoiseInfoOpen(true)}
-      />
-      {!selectedStatuses.unhealthy && !selectedStatuses.active && !selectedStatuses.inactive && (
-        <p className="map-status__all-off">All locations toggled off</p>
-      )}
+      <div className="map-status-group">
+        <LocationStatus
+          unhealthy={unhealthy}
+          active={active}
+          inactive={inactive}
+          selectedStatuses={selectedStatuses}
+          onToggleStatus={onToggleStatus}
+          isLoading={isLoading}
+          error={error}
+          onOpenInfo={() => setIsNoiseInfoOpen(true)}
+        />
+        {!selectedStatuses.unhealthy && !selectedStatuses.active && !selectedStatuses.inactive && (
+          <p className="map-status__all-off">All locations toggled off</p>
+        )}
+      </div>
       <NoiseInfoDialog isOpen={isNoiseInfoOpen} onClose={() => setIsNoiseInfoOpen(false)} />
     </>
   )

@@ -326,12 +326,23 @@ body {
   width: 100%;
 }
 
-.map-status {
+.map-status-group {
   position: absolute;
   top: 16px;
   left: 50%;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
   transform: translateX(-50%);
+}
+
+.map-status {
+  box-sizing: border-box;
+  max-width: 100%;
   padding: 8px 14px;
   color: #24323a;
   background: rgb(255 255 255 / 92%);
@@ -339,7 +350,6 @@ body {
   border-radius: 999px;
   box-shadow: 0 2px 12px rgb(36 50 58 / 16%);
   font-size: 0.875rem;
-  white-space: nowrap;
 }
 
 .map-status--error {
@@ -347,15 +357,10 @@ body {
 }
 
 .map-status__all-off {
-  position: absolute;
-  top: 70px;
-  left: 50%;
-  z-index: 1000;
   margin: 0;
   color: #5f5f5f;
   font-size: 0.8rem;
   font-weight: 600;
-  transform: translateX(-50%);
   white-space: nowrap;
 }
 
@@ -363,6 +368,28 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .map-status {
+    width: max-content;
+    border-radius: 16px;
+  }
+
+  .map-status__counts {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .map-status__count {
+    justify-content: center;
+  }
+
+  .map-status__layer-button,
+  .map-status__info-button {
+    align-self: center;
+  }
 }
 
 .map-status__count {
