@@ -1,4 +1,5 @@
 import type { NoiseMeasurement } from './sensors.api.ts'
+import { getLocationHealth } from '../locations/locations.config.ts'
 
 const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -6,6 +7,7 @@ const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
 })
 
 type LatestNoiseReadingProps = {
+  active: boolean
   measurements: NoiseMeasurement[]
 }
 
@@ -19,7 +21,7 @@ function formatMeasurementDate(timestamp: string) {
   return Number.isNaN(date.getTime()) ? timestamp : measurementDateFormatter.format(date)
 }
 
-export function LatestNoiseReading({ measurements }: LatestNoiseReadingProps) {
+export function LatestNoiseReading({ active, measurements }: LatestNoiseReadingProps) {
   const chronologicalMeasurements = getChronologicalMeasurements(measurements)
   const latestMeasurement = chronologicalMeasurements.at(-1)
   const previousMeasurement = chronologicalMeasurements.at(-2)
@@ -36,11 +38,14 @@ export function LatestNoiseReading({ measurements }: LatestNoiseReadingProps) {
     : null
   const direction = change === null || change === 0 ? 'steady' : change > 0 ? 'up' : 'down'
   const directionSymbol = direction === 'up' ? '\u2191' : direction === 'down' ? '\u2193' : '\u2192'
+  const health = getLocationHealth(active, latestMeasurement.timestamp, latestMeasurement.mean)
 
   return (
     <section className="latest-noise-reading" aria-label="Latest hourly noise reading">
       <p className="sensor-panel__eyebrow">{formatMeasurementDate(latestMeasurement.timestamp)}</p>
-      <div className="latest-noise-reading__value">{latestMeasurement.mean.toFixed(1)} <span>dB</span></div>
+      <div className={`latest-noise-reading__value latest-noise-reading__value--${health}`}>
+        {latestMeasurement.mean.toFixed(1)} <span>dB</span>
+      </div>
       {percentageChange !== null && (
         <p className={`latest-noise-reading__change latest-noise-reading__change--${direction}`}>
           <span aria-hidden="true">{directionSymbol}</span>

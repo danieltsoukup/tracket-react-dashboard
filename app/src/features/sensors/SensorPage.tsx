@@ -192,7 +192,7 @@ function SensorPage() {
               <>
                 <div className="sensor-insights">
                   <SensorPanel title="Latest hourly recording">
-                    <LatestNoiseReading measurements={hourlyMeasurements} />
+                    <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
                   <SensorPanel title={location.label}>
                     <SensorLocationMap location={location} />

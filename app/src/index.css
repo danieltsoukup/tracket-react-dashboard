@@ -138,6 +138,8 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  text-align: center;
   padding: 28px;
 }
 
@@ -151,17 +153,31 @@ body {
 }
 
 .latest-noise-reading__value {
-  color: #e25100;
   font-family: 'Familjen Grotesk', sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(4rem, 6vw, 6rem);
   font-weight: 700;
   line-height: 0.95;
 }
 
+.latest-noise-reading__value--unhealthy,
+.latest-noise-reading__change--up {
+  color: #d64545;
+}
+
+.latest-noise-reading__value--active,
+.latest-noise-reading__change--down {
+  color: #8a9691;
+}
+
+.latest-noise-reading__value--inactive,
+.latest-noise-reading__change--steady {
+  color: #8a9691;
+}
+
 .latest-noise-reading__value span {
-  color: #718078;
+  color: inherit;
   font-family: 'Inter', sans-serif;
-  font-size: 1rem;
+  font-size: 2rem;
   font-weight: 700;
 }
 
@@ -180,15 +196,6 @@ body {
 }
 
 .latest-noise-reading__change--up {
-  color: #a43d32;
-}
-
-.latest-noise-reading__change--down {
-  color: #37725c;
-}
-
-.latest-noise-reading__change--steady {
-  color: #718078;
 }
 
 .sensor-panel__muted {
