@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
+import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
 
 type NoiseChartProps = {
   measurements: NoiseMeasurement[]
@@ -47,6 +48,17 @@ export function NoiseChart({
 }: NoiseChartProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
   const [tooltip, setTooltip] = useState<ChartTooltip | null>(null)
+
+  function handleDownload() {
+    const blob = new Blob([measurementsToCsv(measurements)], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = getNoiseDownloadFilename(granularity, start, end)
+    link.click()
+    URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     const chart = chartRef.current
@@ -170,22 +182,32 @@ export function NoiseChart({
             />
           </label>
         </div>
-        <div className="noise-chart-toggle" role="group" aria-label="Measurement granularity">
+        <div className="noise-chart-toolbar-actions">
+          <div className="noise-chart-toggle" role="group" aria-label="Measurement granularity">
+            <button
+              type="button"
+              className={granularity === 'hourly' ? 'noise-chart-toggle__option noise-chart-toggle__option--active' : 'noise-chart-toggle__option'}
+              aria-pressed={granularity === 'hourly'}
+              onClick={() => onGranularityChange('hourly')}
+            >
+              Hourly
+            </button>
+            <button
+              type="button"
+              className={granularity === 'raw' ? 'noise-chart-toggle__option noise-chart-toggle__option--active' : 'noise-chart-toggle__option'}
+              aria-pressed={granularity === 'raw'}
+              onClick={() => onGranularityChange('raw')}
+            >
+              Raw
+            </button>
+          </div>
           <button
             type="button"
-            className={granularity === 'hourly' ? 'noise-chart-toggle__option noise-chart-toggle__option--active' : 'noise-chart-toggle__option'}
-            aria-pressed={granularity === 'hourly'}
-            onClick={() => onGranularityChange('hourly')}
+            className="noise-chart-download"
+            onClick={handleDownload}
+            disabled={isLoading || measurements.length === 0}
           >
-            Hourly
-          </button>
-          <button
-            type="button"
-            className={granularity === 'raw' ? 'noise-chart-toggle__option noise-chart-toggle__option--active' : 'noise-chart-toggle__option'}
-            aria-pressed={granularity === 'raw'}
-            onClick={() => onGranularityChange('raw')}
-          >
-            Raw
+            Download CSV
           </button>
         </div>
       </div>
