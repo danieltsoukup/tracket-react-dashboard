@@ -120,32 +120,3 @@ Currently contains the default Vite setup notes. It should eventually be replace
 ### `LICENSE`
 
 Contains the project's license terms.
-
-## Planned Application Structure
-
-As the dashboard grows, the source tree can be organized like this:
-
-```text
-src/
-├── app/
-│   ├── App.tsx
-│   ├── routes.tsx
-│   └── providers.tsx
-├── components/
-│   ├── layout/
-│   ├── map/
-│   ├── metrics/
-│   └── charts/
-├── features/
-│   ├── locations/
-│   └── sensors/
-├── lib/
-│   ├── api.ts
-│   └── queryClient.ts
-├── stores/
-├── types/
-├── index.css
-└── main.tsx
-```
-
-The planned stack includes React Router for routes, React-Leaflet for maps, TanStack Query for public API requests, Plotly.js for time-series charts, Zustand for shared UI state, and Tailwind CSS for styling.
