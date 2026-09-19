@@ -349,21 +349,58 @@ body {
 .map-status__counts {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .map-status__count {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  padding: 6px 10px;
+  color: #24323a;
+  background: rgb(36 50 58 / 6%);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
   font-family: 'Familjen Grotesk', sans-serif;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: background-color 160ms ease-in-out, opacity 160ms ease-in-out, transform 160ms ease-in-out;
 }
 
+.map-status__count:hover {
+  background: rgb(36 50 58 / 10%);
+}
+
+.map-status__count:focus-visible,
+.map-status__info-button:focus-visible,
+.noise-info-modal__close:focus-visible {
+  outline: 3px solid rgb(251 149 0 / 45%);
+  outline-offset: 2px;
+}
+
+.map-status__count--selected {
+  background: rgb(255 255 255 / 82%);
+  box-shadow: inset 0 0 0 1px rgb(36 50 58 / 10%);
+}
+
+.map-status__count--selected:hover {
+  background: rgb(255 255 255 / 90%);
+}
+
+.map-status__count--unselected {
+  opacity: 0.7;
+  background: rgb(36 50 58 / 6%);
+}
+
+.map-status__count--unselected:hover {
+  background: rgb(36 50 58 / 9%);
+}
+
+.map-status__layer-button,
 .map-status__info-button,
 .noise-info-modal__close {
   display: grid;
@@ -378,17 +415,20 @@ body {
   cursor: pointer;
 }
 
+.map-status__layer-button:hover,
 .map-status__info-button:hover,
 .noise-info-modal__close:hover {
   background: rgb(36 50 58 / 10%);
 }
 
+.map-status__layer-button:focus-visible,
 .map-status__info-button:focus-visible,
 .noise-info-modal__close:focus-visible {
   outline: 3px solid rgb(251 149 0 / 45%);
   outline-offset: 2px;
 }
 
+.map-status__layer-button .material-symbols-outlined,
 .map-status__info-button .material-symbols-outlined {
   font-size: 1.1rem;
 }
@@ -467,28 +507,90 @@ body {
   font-size: 1.3rem;
 }
 
+.leaflet-control-layers {
+  background: rgb(255 255 255 / 96%);
+  border: 1px solid rgb(36 50 58 / 14%);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgb(36 50 58 / 14%);
+  color: #24323a;
+}
+
+.leaflet-control-layers .leaflet-control-layers-list {
+  padding: 10px 12px;
+}
+
+.leaflet-control-layers .leaflet-control-layers-base,
+.leaflet-control-layers .leaflet-control-layers-overlays {
+  margin: 0;
+}
+
+.leaflet-control-layers label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #24323a;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background-color 140ms ease-in-out, color 140ms ease-in-out;
+}
+
+.leaflet-control-layers label:hover {
+  background: rgb(36 50 58 / 4%);
+}
+
+.leaflet-control-layers input[type='checkbox'] {
+  accent-color: #fb9500;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.leaflet-control-layers-expanded {
+  padding: 0;
+}
+
+.leaflet-control-layers-toggle {
+  width: 16px;
+  height: 16px;
+  background: rgb(255 255 255 / 96%);
+  border: 1px solid rgb(36 50 58 / 14%);
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgb(36 50 58 / 12%);
+}
+
+.leaflet-control-layers-toggle:hover {
+  background: #fff;
+}
+
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 
 .leaflet-tooltip.location-tooltip {
-  padding: 12px 14px;
+  min-width: 180px;
+  max-width: 220px;
+  padding: 10px 14px 12px;
   color: #24323a;
-  background: rgb(255 255 255 / 94%);
+  background: rgb(255 255 255 / 96%);
   border: 1px solid rgb(36 50 58 / 12%);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgb(36 50 58 / 18%);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgb(36 50 58 / 16%);
   font-family: 'Inter', sans-serif;
 }
 
 .location-tooltip::before {
-  border-top-color: rgb(255 255 255 / 94%);
+  border-top-color: rgb(255 255 255 / 96%);
 }
 
 .location-tooltip__label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   max-width: 180px;
   overflow: hidden;
   font-family: 'Familjen Grotesk', sans-serif;
@@ -532,15 +634,16 @@ body {
 .location-tooltip__value {
   display: block;
   margin-top: 5px;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .location-tooltip__timestamp {
-  margin-top: 7px;
+  margin-top: 8px;
   color: #718078;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
 }
 
 .marker-cluster.location-cluster--active {

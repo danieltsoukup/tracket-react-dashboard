@@ -56,6 +56,11 @@ function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedStatuses, setSelectedStatuses] = useState<Record<LocationHealth, boolean>>({
+    unhealthy: true,
+    active: true,
+    inactive: true,
+  })
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.MarkerClusterGroup | null>(null)
@@ -231,6 +236,13 @@ function LocationsPage() {
     mapRef.current?.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
   }
 
+  function toggleStatus(status: LocationHealth) {
+    setSelectedStatuses((current) => ({
+      ...current,
+      [status]: !current[status],
+    }))
+  }
+
   const locationCounts = locations.reduce<Record<LocationHealth, number>>(
     (counts, location) => {
       const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
@@ -247,6 +259,8 @@ function LocationsPage() {
         unhealthy={locationCounts.unhealthy}
         active={locationCounts.active}
         inactive={locationCounts.inactive}
+        selectedStatuses={selectedStatuses}
+        onToggleStatus={toggleStatus}
         isLoading={isLoading}
         error={error}
         onResetMap={resetMapView}
