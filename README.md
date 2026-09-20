@@ -23,4 +23,4 @@ We followed Privacy by Design principles in setting up the data collection.
 
 1. The sound meter devices are deployed on private properties in residential areas at different locations in the city. We are **not publishing exact device locations**. 
 2. The devices **do not record sound** only sound levels in A-weighted decibel levels [dBA](https://en.wikipedia.org/wiki/Decibel). 
-3. We calculate minimum and maximum sound levels at 5 minute intervals on the device and **only broadcast these aggregate values** (along wiht the device ID) to a database.
+3. We calculate minimum and maximum sound levels at 5 minute intervals on the device and **only broadcast these aggregate values** (along wiht the device ID) to a database. 
