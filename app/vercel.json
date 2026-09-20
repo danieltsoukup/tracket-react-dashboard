@@ -3,6 +3,10 @@
     {
         "source": "/locations",
         "destination": "/"
+    },
+    {
+        "source": "/locations/:path*",
+        "destination": "/"
     }
     ]
 }
