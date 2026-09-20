@@ -16,11 +16,15 @@ export const LOCATION_MARKER_OPTIONS: Omit<L.CircleMarkerOptions, 'color' | 'fil
   weight: 2,
 }
 
-const stadiaApiKey = import.meta.env.STADIA_API_KEY
+const stadiaApiKey = import.meta.env.DEV
+  ? import.meta.env.VITE_STADIA_API_KEY
+  : undefined
 
-export const LOCATION_TILE_URL = `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png${
-  stadiaApiKey ? `?api_key=${encodeURIComponent(stadiaApiKey)}` : ''
-}`
+export const LOCATION_TILE_URL =
+  `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png` +
+  (stadiaApiKey
+    ? `?api_key=${encodeURIComponent(stadiaApiKey)}`
+    : '')
 
 export const LOCATION_TILE_ATTRIBUTION = '&copy; Stadia Maps, &copy; OpenMapTiles &copy; OpenStreetMap contributors'
 

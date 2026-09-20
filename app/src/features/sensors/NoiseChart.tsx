@@ -164,7 +164,6 @@ export function NoiseChart({
       <div className="noise-chart-panel__toolbar">
         <div className="noise-chart-range" aria-label="Chart date range">
           <label className="noise-chart-range__field">
-            <span>From</span>
             <input
               type="date"
               value={start}
@@ -173,7 +172,6 @@ export function NoiseChart({
             />
           </label>
           <label className="noise-chart-range__field">
-            <span>To</span>
             <input
               type="date"
               value={end}
