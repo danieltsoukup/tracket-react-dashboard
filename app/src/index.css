@@ -27,7 +27,7 @@ body {
 .sensor-page {
   min-height: 100%;
   box-sizing: border-box;
-  background: #fff9f0;
+  background: #f4f6f3;
 }
 
 .sensor-header {
@@ -104,27 +104,36 @@ body {
 .sensor-insights {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: auto 1fr;
   gap: 20px;
   margin: 28px 0 8px;
   align-items: stretch;
 }
 
 .sensor-panel {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  display: grid;
-  row-gap: 0;
-  grid-row: span 2;
-  grid-template-rows: subgrid;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #e3e8e4;
+  border-radius: 25px;
 }
 
 .sensor-panel__title {
-  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
   color: #718078;
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.sensor-panel__title .material-symbols-outlined {
+  flex: 0 0 auto;
+  color: #718078;
+  font-size: 1.25rem;
 }
 
 .sensor-panel__body {
@@ -136,8 +145,7 @@ body {
   min-height: 285px;
   box-sizing: border-box;
   background: #fff;
-  border: 1px solid #eadfce;
-  border-radius: 8px;
+  border-radius: 25px;
 }
 
 .latest-noise-reading {
@@ -215,6 +223,9 @@ body {
 
 .sensor-location-map {
   overflow: hidden;
+  height: 285px;
+  margin: 8px;
+  border-radius: 25px;
 }
 
 .noise-chart {
