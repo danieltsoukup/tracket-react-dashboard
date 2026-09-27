@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { fetchLocation } from '../locations/locations.api.ts'
+import { isLocationActive } from '../locations/locations.config.ts'
 import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
 import { LatestNoiseReading } from './LatestNoiseReading.tsx'
@@ -74,7 +75,10 @@ function SensorPage() {
           return
         }
 
-        setLocation(loadedLocation)
+        setLocation({
+          ...loadedLocation,
+          active: isLocationActive(loadedLocation.latestTimestamp),
+        })
         const end = new Date(loadedLocation.latestTimestamp)
         setChartEnd(toDateTimeLocalValue(loadedLocation.latestTimestamp))
         setChartStart(toDateTimeLocalValue(new Date(end.getTime() - NOISE_RANGE_MS).toISOString()))

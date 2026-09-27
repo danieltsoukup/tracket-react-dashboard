@@ -16,6 +16,7 @@ import {
   LOCATION_TILE_URL,
   getLocationColor,
   getLocationHealth,
+  isLocationActive,
   type LocationHealth,
 } from './locations.config.ts'
 import { fetchLocations } from './locations.api.ts'
@@ -81,7 +82,11 @@ function LocationsPage() {
         }
 
         console.info(`Loaded ${loadedLocations.length} locations.`)
-        setLocations(loadedLocations)
+        const now = Date.now()
+        setLocations(loadedLocations.map((location) => ({
+          ...location,
+          active: isLocationActive(location.latestTimestamp, now),
+        })))
         setError(null)
       })
       .catch((loadError: unknown) => {

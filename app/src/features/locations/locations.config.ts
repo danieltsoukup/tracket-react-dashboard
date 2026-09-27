@@ -30,6 +30,14 @@ export const LOCATION_TILE_ATTRIBUTION = '&copy; Stadia Maps, &copy; OpenMapTile
 
 export type LocationHealth = 'unhealthy' | 'active' | 'inactive'
 
+const ACTIVE_WINDOW_MS = 24 * 60 * 60 * 1000
+
+export function isLocationActive(latestTimestamp: string, now = Date.now()): boolean {
+  const timestamp = new Date(latestTimestamp).getTime()
+
+  return Number.isFinite(timestamp) && timestamp <= now && now - timestamp <= ACTIVE_WINDOW_MS
+}
+
 export function getLocationHealth(active: boolean, hourEnd: string, hourMean: number): LocationHealth {
   /**
    * Classify a location based on its active status and noise level.

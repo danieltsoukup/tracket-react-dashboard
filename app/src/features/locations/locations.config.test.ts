@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth } from './locations.config.ts'
+import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, isLocationActive } from './locations.config.ts'
 
 function timestampAtHour(hour: number) {
   return new Date(2026, 0, 15, hour, 0, 0).toISOString()
@@ -28,6 +28,21 @@ describe('getLocationHealth', () => {
   it('classifies nighttime readings at or below 40 dB as active', () => {
     expect(getLocationHealth(true, timestampAtHour(23), 40)).toBe('active')
     expect(getLocationHealth(true, timestampAtHour(6), 40)).toBe('active')
+  })
+})
+
+describe('isLocationActive', () => {
+  const now = new Date('2026-09-27T12:00:00.000Z').getTime()
+
+  it('returns true for timestamps within the last 24 hours, including the cutoff', () => {
+    expect(isLocationActive('2026-09-27T11:00:00.000Z', now)).toBe(true)
+    expect(isLocationActive('2026-09-26T12:00:00.000Z', now)).toBe(true)
+  })
+
+  it('returns false for stale, future, or invalid timestamps', () => {
+    expect(isLocationActive('2026-09-26T11:59:59.999Z', now)).toBe(false)
+    expect(isLocationActive('2026-09-27T12:00:00.001Z', now)).toBe(false)
+    expect(isLocationActive('invalid timestamp', now)).toBe(false)
   })
 })
 

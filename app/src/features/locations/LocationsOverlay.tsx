@@ -63,8 +63,8 @@ function LocationStatus({
   onOpenInfo,
 }: LocationStatusProps) {
   const statusConfig: Array<{ key: LocationHealth; label: string; icon: string; count: number }> = [
-    { key: 'unhealthy', label: 'Unhealthy', icon: 'sensors', count: unhealthy },
-    { key: 'active', label: 'Active', icon: 'sensors', count: active },
+    { key: 'unhealthy', label: 'Over limit', icon: 'sensors', count: unhealthy },
+    { key: 'active', label: 'Within limit', icon: 'sensors', count: active },
     { key: 'inactive', label: 'Inactive', icon: 'sensors_off', count: inactive },
   ]
 
