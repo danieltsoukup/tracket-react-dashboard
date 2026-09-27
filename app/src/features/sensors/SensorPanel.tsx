@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 type SensorPanelProps = {
   title: string
-  icon: 'show_chart' | 'location_on'
+  icon: 'show_chart' | 'location_on' | 'calendar_month'
   children: ReactNode
 }
 

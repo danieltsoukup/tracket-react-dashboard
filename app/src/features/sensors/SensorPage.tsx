@@ -198,16 +198,18 @@ function SensorPage() {
                     <SensorLocationMap location={location} />
                   </SensorPanel>
                 </div>
-                <NoiseChart
-                  measurements={measurements}
-                  granularity={granularity}
-                  isLoading={isNoiseLoading}
-                  start={chartStart}
-                  end={chartEnd}
-                  onStartChange={setChartStart}
-                  onEndChange={setChartEnd}
-                  onGranularityChange={setGranularity}
-                />
+                <SensorPanel title="Noise History" icon="calendar_month">
+                  <NoiseChart
+                    measurements={measurements}
+                    granularity={granularity}
+                    isLoading={isNoiseLoading}
+                    start={chartStart}
+                    end={chartEnd}
+                    onStartChange={setChartStart}
+                    onEndChange={setChartEnd}
+                    onGranularityChange={setGranularity}
+                  />
+                </SensorPanel>
               </>
             )}
           </>

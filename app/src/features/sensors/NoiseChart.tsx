@@ -19,7 +19,7 @@ const chartColors = {
   fill: '#FDCB80',
   max: '#FDCB80',
   mean: '#E25100',
-  background: '#FFF9F0',
+  background: '#F4F6F3',
 }
 
 type ChartTooltip = {
@@ -111,7 +111,7 @@ export function NoiseChart({
       showlegend: false,
       xaxis: {
         type: 'date',
-        gridcolor: '#F0DDC2',
+        gridcolor: '#E3E8E4',
         showspikes: true,
         spikemode: 'across',
         spikesnap: 'cursor',
@@ -120,7 +120,7 @@ export function NoiseChart({
         spikedash: 'dot',
         zeroline: false,
       },
-      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#F0DDC2', zeroline: false },
+      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#E3E8E4', zeroline: false },
     }
 
     const handleHover = (event: Plotly.PlotHoverEvent) => {
