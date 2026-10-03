@@ -20,6 +20,8 @@ type LocationsOverlayProps = LocationCounts & {
   isLoading: boolean
   error: string | null
   onResetMap: () => void
+  averageMean: number | null
+  visibleSensorCount: number
 }
 
 type LocationStatusProps = LocationCounts & {
@@ -205,6 +207,8 @@ export function LocationsOverlay({
   isLoading,
   error,
   onResetMap,
+  averageMean,
+  visibleSensorCount,
 }: LocationsOverlayProps) {
   const [isNoiseInfoOpen, setIsNoiseInfoOpen] = useState(false)
 
@@ -226,6 +230,23 @@ export function LocationsOverlay({
           <p className="map-status__all-off">All locations toggled off</p>
         )}
       </div>
+      <section className="map-average-card" aria-label="Average latest hourly noise reading">
+        <p className="sensor-panel__eyebrow">Current view average</p>
+        {isLoading ? (
+          <p className="map-average-card__message">Loading...</p>
+        ) : error ? (
+          <p className="map-average-card__message">Unavailable</p>
+        ) : averageMean === null ? (
+          <p className="map-average-card__message">No sensors in view</p>
+        ) : (
+          <>
+            <div className="latest-noise-reading__value latest-noise-reading__value--active">
+              {averageMean.toFixed(1)} <span>dB</span>
+            </div>
+            <p className="map-average-card__count">{visibleSensorCount} sensors</p>
+          </>
+        )}
+      </section>
       <NoiseInfoDialog isOpen={isNoiseInfoOpen} onClose={() => setIsNoiseInfoOpen(false)} />
     </>
   )

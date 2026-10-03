@@ -502,6 +502,48 @@ body {
   transform: translateX(-50%);
 }
 
+.map-average-card {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  box-sizing: border-box;
+  min-width: 220px;
+  padding: 20px 24px;
+  text-align: center;
+  background: rgb(var(--rgb-white) / 86%);
+  border: 1px solid rgb(var(--rgb-text) / 14%);
+  border-radius: 25px;
+  box-shadow: 0 3px 12px rgb(var(--rgb-text) / 16%);
+}
+
+.map-average-card .sensor-panel__eyebrow {
+  margin-bottom: 10px;
+}
+
+.map-average-card .latest-noise-reading__value {
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+.map-average-card .latest-noise-reading__value span {
+  font-size: 1.25rem;
+}
+
+.map-average-card__count,
+.map-average-card__message {
+  margin: 8px 0 0;
+  color: rgb(var(--rgb-muted));
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .map-average-card {
+    top: auto;
+    bottom: 24px;
+  }
+}
+
 .map-status {
   box-sizing: border-box;
   max-width: 100%;

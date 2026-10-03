@@ -62,6 +62,7 @@ function LocationsPage() {
     active: true,
     inactive: false,
   })
+  const [viewportBounds, setViewportBounds] = useState<L.LatLngBounds | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.MarkerClusterGroup | null>(null)
@@ -151,7 +152,19 @@ function LocationsPage() {
     mapRef.current = map
     markersRef.current = markers
 
+    const updateViewportBounds = () => setViewportBounds(map.getBounds())
+    const handleWindowResize = () => {
+      map.invalidateSize({ pan: false })
+      updateViewportBounds()
+    }
+
+    map.on('moveend', updateViewportBounds)
+    map.on('zoomend', updateViewportBounds)
+    window.addEventListener('resize', handleWindowResize)
+    updateViewportBounds()
+
     return () => {
+      window.removeEventListener('resize', handleWindowResize)
       map.remove()
       mapRef.current = null
       markersRef.current = null
@@ -225,6 +238,15 @@ function LocationsPage() {
     },
     { unhealthy: 0, active: 0, inactive: 0 },
   )
+  const visibleLocations = viewportBounds
+    ? locations.filter((location) => {
+      const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
+      return selectedStatuses[health] && viewportBounds.contains([location.latitude, location.longitude])
+    })
+    : []
+  const visibleMeanAverage = visibleLocations.length > 0
+    ? visibleLocations.reduce((total, location) => total + location.hourMean, 0) / visibleLocations.length
+    : null
 
   return (
     <main className="map-page">
@@ -238,6 +260,8 @@ function LocationsPage() {
         isLoading={isLoading}
         error={error}
         onResetMap={resetMapView}
+        averageMean={visibleMeanAverage}
+        visibleSensorCount={visibleLocations.length}
       />
     </main>
   )
