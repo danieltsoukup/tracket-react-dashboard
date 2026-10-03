@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
@@ -63,6 +64,12 @@ export function NoiseChart({
     link.download = getNoiseDownloadFilename(granularity, start, end)
     link.click()
     URL.revokeObjectURL(url)
+  }
+
+  function preventDateTyping(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key.length === 1 || ['Backspace', 'Delete', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+    }
   }
 
   useEffect(() => {
@@ -179,6 +186,9 @@ export function NoiseChart({
               type="date"
               value={start}
               max={end || undefined}
+              onKeyDown={preventDateTyping}
+              onBeforeInput={(event) => event.preventDefault()}
+              onPaste={(event) => event.preventDefault()}
               onChange={(event) => onStartChange(event.target.value)}
             />
           </label>
@@ -187,6 +197,9 @@ export function NoiseChart({
               type="date"
               value={end}
               min={start || undefined}
+              onKeyDown={preventDateTyping}
+              onBeforeInput={(event) => event.preventDefault()}
+              onPaste={(event) => event.preventDefault()}
               onChange={(event) => onEndChange(event.target.value)}
             />
           </label>
