@@ -132,7 +132,7 @@ export function NoiseChart({
         gridcolor: '#E3E8E4',
         showspikes: true,
         spikemode: 'across',
-        spikesnap: 'cursor',
+        spikesnap: 'data',
         spikecolor: '#718078',
         spikethickness: 1,
         spikedash: 'dot',
