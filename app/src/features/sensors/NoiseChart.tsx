@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
-import { formatSensorTimestamp, toSensorLocalPlotTimestamp } from '../../utils/sensorLocalTime.ts'
+import type { NoiseChartData } from './noiseChartData.ts'
+import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 
 type NoiseChartProps = {
   measurements: NoiseMeasurement[]
+  chartData: NoiseChartData
   granularity: NoiseGranularity
   isLoading: boolean
   start: string
@@ -40,6 +42,7 @@ const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
 
 export function NoiseChart({
   measurements,
+  chartData,
   granularity,
   isLoading,
   start,
@@ -65,51 +68,20 @@ export function NoiseChart({
   useEffect(() => {
     const chart = chartRef.current
 
-    if (!chart || measurements.length === 0) {
+    if (!chart || chartData.points.length === 0) {
       return
     }
 
     const lineWidths = granularity === 'hourly' ? { range: 1, mean: 3 } : { range: 0.5, mean: 1.5 }
-    const intervals = measurements
-      .slice(1)
-      .map((measurement, index) => Date.parse(measurement.timestamp) - Date.parse(measurements[index].timestamp))
-      .filter((interval) => Number.isFinite(interval) && interval > 0)
-      .sort((a, b) => a - b)
-    const typicalInterval = intervals.length > 0 ? intervals[Math.floor((intervals.length - 1) / 2)] : null
-    const timestamps: string[] = []
-    const chartMeasurements: (NoiseMeasurement | null)[] = []
-
-    measurements.forEach((measurement, index) => {
-      const previousMeasurement = measurements[index - 1]
-      const interval = previousMeasurement
-        ? Date.parse(measurement.timestamp) - Date.parse(previousMeasurement.timestamp)
-        : 0
-
-      if (typicalInterval !== null && interval > typicalInterval * 1.5) {
-        timestamps.push(toSensorLocalPlotTimestamp(measurement.timestamp))
-        chartMeasurements.push(null)
-      }
-
-      timestamps.push(toSensorLocalPlotTimestamp(measurement.timestamp))
-      chartMeasurements.push(measurement)
-    })
-
     const traces: Plotly.Data[] = []
-    let segmentTimestamps: string[] = []
-    let segmentMeasurements: NoiseMeasurement[] = []
-
-    function addRangeSegment() {
-      if (segmentMeasurements.length === 0) {
-        return
-      }
-
+    chartData.rangeSegments.forEach((segment) => {
       traces.push(
         {
           type: 'scatter',
           mode: 'lines',
           name: 'Minimum',
-          x: segmentTimestamps,
-          y: segmentMeasurements.map((measurement) => measurement.min),
+          x: segment.timestamps,
+          y: segment.minimum,
           connectgaps: false,
           line: { color: chartColors.min, width: lineWidths.range },
           hoverinfo: 'none',
@@ -118,8 +90,8 @@ export function NoiseChart({
           type: 'scatter',
           mode: 'lines',
           name: 'Maximum',
-          x: segmentTimestamps,
-          y: segmentMeasurements.map((measurement) => measurement.max),
+          x: segment.timestamps,
+          y: segment.maximum,
           connectgaps: false,
           line: { color: chartColors.max, width: lineWidths.range },
           fill: 'tonexty',
@@ -128,27 +100,14 @@ export function NoiseChart({
           hoverinfo: 'none',
         },
       )
-      segmentTimestamps = []
-      segmentMeasurements = []
-    }
-
-    chartMeasurements.forEach((measurement, index) => {
-      if (measurement === null) {
-        addRangeSegment()
-        return
-      }
-
-      segmentTimestamps.push(timestamps[index])
-      segmentMeasurements.push(measurement)
     })
-    addRangeSegment()
 
     traces.push({
       type: 'scatter',
       mode: 'lines',
       name: 'Mean',
-      x: timestamps,
-      y: chartMeasurements.map((measurement) => measurement?.mean ?? null),
+      x: chartData.points.map((point) => point.timestamp),
+      y: chartData.points.map((point) => point.measurement?.mean ?? null),
       connectgaps: false,
       line: { color: chartColors.mean, width: lineWidths.mean },
       hoverinfo: 'none',
@@ -177,7 +136,7 @@ export function NoiseChart({
 
     const handleHover = (event: Plotly.PlotHoverEvent) => {
       const point = event.points[0]
-      const measurement = chartMeasurements[point.pointNumber]
+      const measurement = chartData.points[point.pointNumber]?.measurement
       const mouseEvent = event.event
 
       if (!measurement || !mouseEvent) {
@@ -209,7 +168,7 @@ export function NoiseChart({
       setTooltip(null)
       void Plotly.purge(chart)
     }
-  }, [granularity, measurements])
+  }, [chartData, granularity, measurements])
 
   return (
     <section className="noise-chart-panel" aria-label="Sensor noise chart">

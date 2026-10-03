@@ -10,6 +10,7 @@ import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
 import { LatestNoiseReading } from './LatestNoiseReading.tsx'
 import { NoiseChart } from './NoiseChart.tsx'
+import { prepareNoiseChartData, type NoiseChartData } from './noiseChartData.ts'
 import { SensorLocationMap } from './SensorLocationMap.tsx'
 import { SensorPanel } from './SensorPanel.tsx'
 import { getSensorLocalDate, shiftSensorLocalDate, toSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
@@ -18,6 +19,7 @@ function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
   const [location, setLocation] = useState<Location | null>(null)
   const [measurements, setMeasurements] = useState<NoiseMeasurement[]>([])
+  const [chartData, setChartData] = useState<NoiseChartData>(() => prepareNoiseChartData([]))
   const [hourlyMeasurements, setHourlyMeasurements] = useState<NoiseMeasurement[]>([])
   const [granularity, setGranularity] = useState<NoiseGranularity>('hourly')
   const [chartStart, setChartStart] = useState('')
@@ -85,6 +87,7 @@ function SensorPage() {
   useEffect(() => {
     if (!hasValidSensorId || !location || location.id !== parsedSensorId) {
       setMeasurements([])
+      setChartData(prepareNoiseChartData([]))
       setHourlyMeasurements([])
       setIsNoiseLoading(false)
       return
@@ -92,6 +95,7 @@ function SensorPage() {
 
     if (!chartStart || !chartEnd || chartStart > chartEnd) {
       setMeasurements([])
+      setChartData(prepareNoiseChartData([]))
       setIsNoiseLoading(false)
       return
     }
@@ -105,6 +109,7 @@ function SensorPage() {
 
     if (cachedMeasurements) {
       setMeasurements(cachedMeasurements)
+      setChartData(prepareNoiseChartData(cachedMeasurements))
       if (granularity === 'hourly') {
         setHourlyMeasurements(cachedMeasurements)
       }
@@ -126,6 +131,7 @@ function SensorPage() {
         if (isCurrentRequest) {
           measurementsCache.current.set(cacheKey, loadedMeasurements)
           setMeasurements(loadedMeasurements)
+          setChartData(prepareNoiseChartData(loadedMeasurements))
           if (granularity === 'hourly') {
             setHourlyMeasurements(loadedMeasurements)
           }
@@ -188,6 +194,7 @@ function SensorPage() {
                 <SensorPanel title="Noise History" icon="calendar_month">
                   <NoiseChart
                     measurements={measurements}
+                    chartData={chartData}
                     granularity={granularity}
                     isLoading={isNoiseLoading}
                     start={chartStart}
