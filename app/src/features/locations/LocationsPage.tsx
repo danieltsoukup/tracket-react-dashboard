@@ -230,7 +230,10 @@ function LocationsPage() {
     }))
   }
 
-  const locationCounts = locations.reduce<Record<LocationHealth, number>>(
+  const viewportLocations = viewportBounds
+    ? locations.filter((location) => viewportBounds.contains([location.latitude, location.longitude]))
+    : []
+  const viewportLocationCounts = viewportLocations.reduce<Record<LocationHealth, number>>(
     (counts, location) => {
       const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
       counts[health] += 1
@@ -238,30 +241,28 @@ function LocationsPage() {
     },
     { unhealthy: 0, active: 0, inactive: 0 },
   )
-  const visibleLocations = viewportBounds
-    ? locations.filter((location) => {
+  const selectedViewportLocations = viewportLocations.filter((location) => {
       const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
-      return selectedStatuses[health] && viewportBounds.contains([location.latitude, location.longitude])
+      return selectedStatuses[health]
     })
-    : []
-  const visibleMeanAverage = visibleLocations.length > 0
-    ? visibleLocations.reduce((total, location) => total + location.hourMean, 0) / visibleLocations.length
+  const visibleMeanAverage = selectedViewportLocations.length > 0
+    ? selectedViewportLocations.reduce((total, location) => total + location.hourMean, 0) / selectedViewportLocations.length
     : null
 
   return (
     <main className="map-page">
       <div ref={mapContainerRef} className="location-map" aria-label="Sensor locations map" />
       <LocationsOverlay
-        unhealthy={locationCounts.unhealthy}
-        active={locationCounts.active}
-        inactive={locationCounts.inactive}
+        unhealthy={viewportLocationCounts.unhealthy}
+        active={viewportLocationCounts.active}
+        inactive={viewportLocationCounts.inactive}
         selectedStatuses={selectedStatuses}
         onToggleStatus={toggleStatus}
         isLoading={isLoading}
         error={error}
         onResetMap={resetMapView}
         averageMean={visibleMeanAverage}
-        visibleSensorCount={visibleLocations.length}
+        visibleSensorCount={selectedViewportLocations.length}
       />
     </main>
   )
