@@ -53,6 +53,7 @@ export function NoiseChart({
   onGranularityChange,
 }: NoiseChartProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
   const [tooltip, setTooltip] = useState<ChartTooltip | null>(null)
 
   function handleDownload() {
@@ -151,9 +152,14 @@ export function NoiseChart({
       }
 
       const chartBounds = chart.getBoundingClientRect()
+      const pointX = point.xPixel ?? mouseEvent.clientX - chartBounds.left
+      const pointY = point.yPixel ?? mouseEvent.clientY - chartBounds.top
+      const tooltipWidth = tooltipRef.current?.offsetWidth ?? 180
+      const placeLeft = pointX + 14 + tooltipWidth > chartBounds.width
+
       setTooltip({
-        left: mouseEvent.clientX - chartBounds.left + 14,
-        top: mouseEvent.clientY - chartBounds.top - 12,
+        left: placeLeft ? pointX - tooltipWidth - 14 : pointX + 14,
+        top: pointY - 12,
         timestamp: formatSensorTimestamp(measurement.timestamp, tooltipDateFormatter),
         min: measurement.min,
         mean: measurement.mean,
@@ -236,7 +242,12 @@ export function NoiseChart({
       <div className="noise-chart-container">
         <div ref={chartRef} className="noise-chart" aria-label="Sensor noise over time" />
         {tooltip && (
-          <div className="noise-chart-tooltip" style={{ left: tooltip.left, top: tooltip.top }} role="status">
+          <div
+            ref={tooltipRef}
+            className="noise-chart-tooltip"
+            style={{ left: tooltip.left, top: tooltip.top }}
+            role="status"
+          >
             <div className="noise-chart-tooltip__date">{tooltip.timestamp}</div>
             <div className="noise-chart-tooltip__mean">{tooltip.mean.toFixed(1)} dB</div>
             <div className="noise-chart-tooltip__range">
