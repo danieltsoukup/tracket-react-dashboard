@@ -60,7 +60,7 @@ function LocationsPage() {
   const [selectedStatuses, setSelectedStatuses] = useState<Record<LocationHealth, boolean>>({
     unhealthy: true,
     active: true,
-    inactive: true,
+    inactive: false,
   })
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
