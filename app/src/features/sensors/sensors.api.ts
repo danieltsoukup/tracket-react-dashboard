@@ -2,6 +2,8 @@
  * @file sensors.api.ts
  * @description Utilities for fetching sensor measurements from the API.
  */
+import { shiftSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
+
 export const SENSOR_NOISE_API_URL = 'https://api.tracket.info/v1/locations'
 const MEASUREMENTS_PAGE_SIZE = 1000
 
@@ -54,8 +56,7 @@ function isNoiseResponse(value: unknown): value is NoiseResponse {
 export async function fetchSensorNoise(sensorId: number, options: NoiseQueryOptions = {}): Promise<NoiseMeasurement[]> {
   const { signal, latestTimestamp, ...queryOptions } = options
   const end = queryOptions.end ?? latestTimestamp
-  const start =
-    queryOptions.start ?? (end ? new Date(new Date(end).getTime() - 4 * 24 * 60 * 60 * 1000).toISOString() : undefined)
+  const start = queryOptions.start ?? (end ? shiftSensorLocalTimestamp(end, -4) : undefined)
   const measurements: NoiseMeasurement[] = []
   let page = queryOptions.page ?? 0
 

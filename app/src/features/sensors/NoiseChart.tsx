@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
+import { formatSensorTimestamp, toSensorLocalPlotTimestamp } from '../../utils/sensorLocalTime.ts'
 
 type NoiseChartProps = {
   measurements: NoiseMeasurement[]
@@ -32,6 +33,7 @@ type ChartTooltip = {
 }
 
 const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
+  timeZone: 'UTC',
   dateStyle: 'medium',
   timeStyle: 'short',
 })
@@ -68,7 +70,7 @@ export function NoiseChart({
     }
 
     const lineWidths = granularity === 'hourly' ? { range: 1, mean: 3 } : { range: 0.5, mean: 1.5 }
-    const timestamps = measurements.map((measurement) => measurement.timestamp)
+    const timestamps = measurements.map((measurement) => toSensorLocalPlotTimestamp(measurement.timestamp))
     const traces: Plotly.Data[] = [
       {
         type: 'scatter',
@@ -136,7 +138,7 @@ export function NoiseChart({
       setTooltip({
         left: mouseEvent.clientX - chartBounds.left + 14,
         top: mouseEvent.clientY - chartBounds.top - 12,
-        timestamp: tooltipDateFormatter.format(new Date(measurement.timestamp)),
+        timestamp: formatSensorTimestamp(measurement.timestamp, tooltipDateFormatter),
         min: measurement.min,
         mean: measurement.mean,
         max: measurement.max,

@@ -58,6 +58,10 @@ Example:
 
 Return measurements for the given location.  The timestamps will be returned for the timezone where the device is located.
 
+The client must preserve the timestamp's sensor-local date and time, including its UTC offset. Threshold classification uses the hour written in that timestamp: readings above 55 dB are unhealthy from 07:00 through 22:59, and readings above 40 dB are unhealthy from 23:00 through 06:59. Date labels, chart tooltips, and chart date-range requests should likewise use the sensor-local date and time rather than the viewer's browser timezone.
+
+For now, date-range calculations use calendar-day arithmetic and reuse the UTC offset on the latest timestamp. This deliberately does not account for a sensor's offset changing across a daylight-saving transition; handling that correctly requires an IANA timezone identifier from the API.
+
 HTTP Get Parameters
 * granularity - “raw”, “hourly”, “life-time”
 * start - Optional start time in format recognized by strtotime (e.g. 2024-03-19 14:00:12).

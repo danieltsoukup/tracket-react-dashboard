@@ -1,7 +1,9 @@
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { getLocationHealth } from '../locations/locations.config.ts'
+import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 
 const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
+  timeZone: 'UTC',
   dateStyle: 'medium',
   timeStyle: 'short',
 })
@@ -16,9 +18,7 @@ function getChronologicalMeasurements(measurements: NoiseMeasurement[]) {
 }
 
 function formatMeasurementDate(timestamp: string) {
-  const date = new Date(timestamp)
-
-  return Number.isNaN(date.getTime()) ? timestamp : measurementDateFormatter.format(date)
+  return formatSensorTimestamp(timestamp, measurementDateFormatter)
 }
 
 export function LatestNoiseReading({ active, measurements }: LatestNoiseReadingProps) {

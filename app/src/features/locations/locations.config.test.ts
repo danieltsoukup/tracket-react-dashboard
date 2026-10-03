@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, isLocationActive } from './locations.config.ts'
 
 function timestampAtHour(hour: number) {
-  return new Date(2026, 0, 15, hour, 0, 0).toISOString()
+  return new Date(Date.UTC(2026, 0, 15, hour, 0, 0)).toISOString()
 }
 
 describe('getLocationHealth', () => {
@@ -28,6 +28,13 @@ describe('getLocationHealth', () => {
   it('classifies nighttime readings at or below 40 dB as active', () => {
     expect(getLocationHealth(true, timestampAtHour(23), 40)).toBe('active')
     expect(getLocationHealth(true, timestampAtHour(6), 40)).toBe('active')
+  })
+
+  it('applies thresholds using the sensor-local hour in offset timestamps', () => {
+    expect(getLocationHealth(true, '2026-01-15T06:30:00-05:00', 50)).toBe('unhealthy')
+    expect(getLocationHealth(true, '2026-01-15T07:00:00-05:00', 50)).toBe('active')
+    expect(getLocationHealth(true, '2026-01-15T22:59:00-05:00', 50)).toBe('active')
+    expect(getLocationHealth(true, '2026-01-15T23:00:00-05:00', 50)).toBe('unhealthy')
   })
 })
 

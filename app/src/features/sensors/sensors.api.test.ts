@@ -60,6 +60,22 @@ describe('fetchSensorNoise', () => {
     )
   })
 
+  it('uses sensor-local timestamps when deriving a default range from an offset timestamp', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ measurements: [validMeasurement] }), { status: 200 }),
+    )
+
+    await fetchSensorNoise(572250, {
+      granularity: 'hourly',
+      latestTimestamp: '2026-09-13T12:00:00-04:00',
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${SENSOR_NOISE_API_URL}/572250/noise?granularity=hourly&start=2026-09-09T12%3A00%3A00-04%3A00&end=2026-09-13T12%3A00%3A00-04%3A00&page=0`,
+      {},
+    )
+  })
+
   it('throws the response status when the API request fails', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 503 }))
 

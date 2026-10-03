@@ -12,23 +12,7 @@ import { LatestNoiseReading } from './LatestNoiseReading.tsx'
 import { NoiseChart } from './NoiseChart.tsx'
 import { SensorLocationMap } from './SensorLocationMap.tsx'
 import { SensorPanel } from './SensorPanel.tsx'
-
-const NOISE_RANGE_MS = 4 * 24 * 60 * 60 * 1000
-
-function toDateTimeLocalValue(timestamp: string) {
-  const date = new Date(timestamp)
-
-  if (Number.isNaN(date.getTime())) {
-    return ''
-  }
-
-  const offset = date.getTimezoneOffset() * 60 * 1000
-  return new Date(date.getTime() - offset).toISOString().slice(0, 10)
-}
-
-function toApiTimestamp(value: string, time: '00:00:00' | '23:59:00') {
-  return value ? new Date(`${value}T${time}`).toISOString() : undefined
-}
+import { getSensorLocalDate, shiftSensorLocalDate, toSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
@@ -79,9 +63,8 @@ function SensorPage() {
           ...loadedLocation,
           active: isLocationActive(loadedLocation.latestTimestamp),
         })
-        const end = new Date(loadedLocation.latestTimestamp)
-        setChartEnd(toDateTimeLocalValue(loadedLocation.latestTimestamp))
-        setChartStart(toDateTimeLocalValue(new Date(end.getTime() - NOISE_RANGE_MS).toISOString()))
+        setChartEnd(getSensorLocalDate(loadedLocation.latestTimestamp))
+        setChartStart(shiftSensorLocalDate(loadedLocation.latestTimestamp, -4))
         setIsLocationLoading(false)
       })
       .catch((loadError: unknown) => {
@@ -115,8 +98,8 @@ function SensorPage() {
 
     const controller = new AbortController()
     let isCurrentRequest = true
-    const start = toApiTimestamp(chartStart, '00:00:00')
-    const end = toApiTimestamp(chartEnd, '23:59:00')
+    const start = toSensorLocalTimestamp(chartStart, '00:00:00', location.latestTimestamp)
+    const end = toSensorLocalTimestamp(chartEnd, '23:59:00', location.latestTimestamp)
     const cacheKey = `${parsedSensorId}:${location.latestTimestamp}:${granularity}:${start}:${end}`
     const cachedMeasurements = measurementsCache.current.get(cacheKey)
 

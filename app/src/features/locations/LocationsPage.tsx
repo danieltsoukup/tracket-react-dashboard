@@ -22,6 +22,7 @@ import {
 import { fetchLocations } from './locations.api.ts'
 import { LocationsOverlay } from './LocationsOverlay.tsx'
 import type { Location } from './locations.types.ts'
+import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 
 type LocationMarker = L.CircleMarker & {
   locationActive: boolean
@@ -32,14 +33,13 @@ type LocationMarker = L.CircleMarker & {
 const INITIAL_MAP_CENTER: L.LatLngExpression = [43.6532, -79.3832]
 const INITIAL_MAP_ZOOM = 3
 const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
+  timeZone: 'UTC',
   dateStyle: 'medium',
   timeStyle: 'short',
 })
 
 function formatMeasurementDate(timestamp: string) {
-  const date = new Date(timestamp)
-
-  return Number.isNaN(date.getTime()) ? timestamp : measurementDateFormatter.format(date)
+  return formatSensorTimestamp(timestamp, measurementDateFormatter)
 }
 
 function getLocationInfo(location: Location) {

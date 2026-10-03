@@ -3,6 +3,7 @@
  * @description This file contains the configuration for the locations feature.
  */
 import type L from 'leaflet'
+import { getSensorLocalHour } from '../../utils/sensorLocalTime.ts'
 
 export const LOCATION_STATUS_COLORS = {
   active: '#FB9500',
@@ -49,8 +50,8 @@ export function getLocationHealth(active: boolean, hourEnd: string, hourMean: nu
     return 'inactive'
   }
 
-  const hour = new Date(hourEnd).getHours()
-  const threshold = hour >= 7 && hour < 23 ? 55 : 40
+  const hour = getSensorLocalHour(hourEnd)
+  const threshold = hour !== null && hour >= 7 && hour < 23 ? 55 : 40
 
   return hourMean > threshold ? 'unhealthy' : 'active'
 }
