@@ -64,7 +64,7 @@ function SensorPage() {
           active: isLocationActive(loadedLocation.latestTimestamp),
         })
         setChartEnd(getSensorLocalDate(loadedLocation.latestTimestamp))
-        setChartStart(shiftSensorLocalDate(loadedLocation.latestTimestamp, -4))
+        setChartStart(shiftSensorLocalDate(loadedLocation.latestTimestamp, -7))
         setIsLocationLoading(false)
       })
       .catch((loadError: unknown) => {
