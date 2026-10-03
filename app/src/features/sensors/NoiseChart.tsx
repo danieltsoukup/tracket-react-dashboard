@@ -249,10 +249,17 @@ export function NoiseChart({
             role="status"
           >
             <div className="noise-chart-tooltip__date">{tooltip.timestamp}</div>
-            <div className="noise-chart-tooltip__mean">{tooltip.mean.toFixed(1)} dB</div>
-            <div className="noise-chart-tooltip__range">
-              <span>Min {tooltip.min.toFixed(1)} dB</span>
-              <span>Max {tooltip.max.toFixed(1)} dB</span>
+            <div className="noise-chart-tooltip__value">
+              <span className="noise-chart-tooltip__label">Max</span>
+              <span>{tooltip.max.toFixed(1)} <span className="noise-chart-tooltip__unit">dB</span></span>
+            </div>
+            <div className="noise-chart-tooltip__value">
+              <span className="noise-chart-tooltip__label">Avg</span>
+              <span>{tooltip.mean.toFixed(1)} <span className="noise-chart-tooltip__unit">dB</span></span>
+            </div>
+            <div className="noise-chart-tooltip__value">
+              <span className="noise-chart-tooltip__label">Min</span>
+              <span>{tooltip.min.toFixed(1)} <span className="noise-chart-tooltip__unit">dB</span></span>
             </div>
           </div>
         )}

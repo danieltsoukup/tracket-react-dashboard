@@ -280,21 +280,27 @@ body {
   font-size: 0.7rem;
 }
 
-.noise-chart-tooltip__mean {
+.noise-chart-tooltip__value {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  align-items: baseline;
   margin-top: 5px;
   color: rgb(var(--rgb-alert));
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 1.05rem;
+  font-weight: 600;
   line-height: 1;
 }
 
-.noise-chart-tooltip__range {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
+.noise-chart-tooltip__label {
   color: rgb(var(--rgb-muted));
   font-size: 0.7rem;
+  font-weight: 400;
+}
+
+.noise-chart-tooltip__unit {
+  color: rgb(var(--rgb-muted));
+  font-size: 0.75em;
+  font-weight: 400;
 }
 
 .noise-chart-container {
