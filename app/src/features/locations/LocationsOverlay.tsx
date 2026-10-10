@@ -74,7 +74,7 @@ function LocationStatus({
     <div className="map-status" aria-live="polite">
       {isLoading && <span>Loading locations...</span>}
       {error && <span className="map-status--error">{error}</span>}
-      {!isLoading && !error && (unhealthy + active + inactive > 0) && (
+      {!isLoading && !error && (
         <span className="map-status__counts">
           <button
             className="map-status__layer-button"
@@ -226,6 +226,9 @@ export function LocationsOverlay({
           error={error}
           onOpenInfo={() => setIsNoiseInfoOpen(true)}
         />
+        {!isLoading && !error && unhealthy + active + inactive === 0 && (
+          <p className="map-status__all-off">No sensors in view</p>
+        )}
         {!selectedStatuses.unhealthy && !selectedStatuses.active && !selectedStatuses.inactive && (
           <p className="map-status__all-off">All locations toggled off</p>
         )}
