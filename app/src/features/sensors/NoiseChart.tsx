@@ -54,6 +54,14 @@ type ChartTooltip = {
   notes: string[]
 }
 
+type PlotlyChartElement = Plotly.PlotlyHTMLElement & {
+  _fullLayout?: {
+    xaxis?: {
+      range?: [unknown, unknown]
+    }
+  }
+}
+
 const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
   timeZone: 'UTC',
   dateStyle: 'medium',
@@ -221,27 +229,28 @@ export function NoiseChart({
       })
     }
 
+    const plot = chart as unknown as PlotlyChartElement
+    let relayoutFrame: number | null = null
     const handleUnhover = () => setTooltip(null)
-    const handleRelayout = (event: Plotly.PlotRelayoutEvent) => {
-      if (event['xaxis.autorange'] === true) {
-        setVisibleRange(null)
-        return
+    const handleRelayout = () => {
+      if (relayoutFrame !== null) {
+        cancelAnimationFrame(relayoutFrame)
       }
 
-      const startValue = event['xaxis.range[0]']
-      const endValue = event['xaxis.range[1]']
-      const parseRangeValue = (value: unknown) => (
-        typeof value === 'number' ? value : typeof value === 'string' ? Date.parse(value) : Number.NaN
-      )
-      const rangeStart = parseRangeValue(startValue)
-      const rangeEnd = parseRangeValue(endValue)
+      relayoutFrame = requestAnimationFrame(() => {
+        relayoutFrame = null
+        const axisRange = plot._fullLayout?.xaxis?.range
+        const parseRangeValue = (value: unknown) => (
+          typeof value === 'number' ? value : typeof value === 'string' ? Date.parse(value) : Number.NaN
+        )
+        const rangeStart = parseRangeValue(axisRange?.[0])
+        const rangeEnd = parseRangeValue(axisRange?.[1])
 
-      if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd) && rangeEnd > rangeStart) {
-        setVisibleRange([rangeStart, rangeEnd])
-      }
+        if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd) && rangeEnd > rangeStart) {
+          setVisibleRange([rangeStart, rangeEnd])
+        }
+      })
     }
-
-    const plot = chart as unknown as Plotly.PlotlyHTMLElement
 
     void Plotly.newPlot(chart, traces, layout, { responsive: true, displayModeBar: false, displaylogo: false }).then(() => {
       plot.on('plotly_hover', handleHover)
@@ -253,6 +262,9 @@ export function NoiseChart({
       plot.removeAllListeners('plotly_hover')
       plot.removeAllListeners('plotly_unhover')
       plot.removeAllListeners('plotly_relayout')
+      if (relayoutFrame !== null) {
+        cancelAnimationFrame(relayoutFrame)
+      }
       setTooltip(null)
       void Plotly.purge(chart)
     }
