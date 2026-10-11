@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, getLocationIcon, isLocationActive } from './locations.config.ts'
+import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, getLocationIcon, getMostCommonLocationHealth, isLocationActive } from './locations.config.ts'
 
 function timestampAtHour(hour: number) {
   return new Date(Date.UTC(2026, 0, 15, hour, 0, 0)).toISOString()
@@ -35,6 +35,23 @@ describe('getLocationHealth', () => {
     expect(getLocationHealth(true, '2026-01-15T07:00:00-05:00', 50)).toBe('active')
     expect(getLocationHealth(true, '2026-01-15T22:59:00-05:00', 50)).toBe('active')
     expect(getLocationHealth(true, '2026-01-15T23:00:00-05:00', 50)).toBe('unhealthy')
+  })
+})
+
+describe('getMostCommonLocationHealth', () => {
+  it('returns the status with the highest sensor count', () => {
+    expect(getMostCommonLocationHealth({ unhealthy: 3, active: 2, inactive: 1 })).toBe('unhealthy')
+    expect(getMostCommonLocationHealth({ unhealthy: 1, active: 4, inactive: 2 })).toBe('active')
+    expect(getMostCommonLocationHealth({ unhealthy: 1, active: 2, inactive: 3 })).toBe('inactive')
+  })
+
+  it('breaks ties by prioritizing unhealthy, then active sensors', () => {
+    expect(getMostCommonLocationHealth({ unhealthy: 2, active: 2, inactive: 1 })).toBe('unhealthy')
+    expect(getMostCommonLocationHealth({ unhealthy: 0, active: 2, inactive: 2 })).toBe('active')
+  })
+
+  it('returns null when there are no sensors', () => {
+    expect(getMostCommonLocationHealth({ unhealthy: 0, active: 0, inactive: 0 })).toBeNull()
   })
 })
 

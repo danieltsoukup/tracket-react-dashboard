@@ -17,6 +17,7 @@ import {
   getLocationColor,
   getLocationHealth,
   getLocationIcon,
+  getMostCommonLocationHealth,
   isLocationActive,
   type LocationHealth,
 } from './locations.config.ts'
@@ -247,9 +248,18 @@ function LocationsPage() {
       const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
       return selectedStatuses[health]
     })
+  const selectedViewportLocationCounts = selectedViewportLocations.reduce<Record<LocationHealth, number>>(
+    (counts, location) => {
+      const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
+      counts[health] += 1
+      return counts
+    },
+    { unhealthy: 0, active: 0, inactive: 0 },
+  )
   const visibleMeanAverage = selectedViewportLocations.length > 0
     ? selectedViewportLocations.reduce((total, location) => total + location.hourMean, 0) / selectedViewportLocations.length
     : null
+  const majorityViewportHealth = getMostCommonLocationHealth(selectedViewportLocationCounts)
 
   return (
     <main className="map-page">
@@ -264,6 +274,7 @@ function LocationsPage() {
         error={error}
         onResetMap={resetMapView}
         averageMean={visibleMeanAverage}
+        averageHealth={majorityViewportHealth}
         visibleSensorCount={selectedViewportLocations.length}
       />
     </main>

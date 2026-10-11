@@ -21,6 +21,7 @@ type LocationsOverlayProps = LocationCounts & {
   error: string | null
   onResetMap: () => void
   averageMean: number | null
+  averageHealth: LocationHealth | null
   visibleSensorCount: number
 }
 
@@ -198,7 +199,7 @@ function NoiseInfoDialog({ isOpen, onClose }: NoiseInfoDialogProps) {
   )
 }
 
-function AverageCard({ averageMean, visibleSensorCount, isLoading, error }: { averageMean: number | null; visibleSensorCount: number; isLoading: boolean; error: boolean }) {
+function AverageCard({ averageMean, averageHealth, visibleSensorCount, isLoading, error }: { averageMean: number | null; averageHealth: LocationHealth | null; visibleSensorCount: number; isLoading: boolean; error: boolean }) {
   return (
       <section className="map-average-card" aria-label="Average latest hourly noise reading">
         {isLoading ? (
@@ -209,7 +210,7 @@ function AverageCard({ averageMean, visibleSensorCount, isLoading, error }: { av
           <p className="map-average-card__message">No sensors in view</p>
         ) : (
           <>
-            <div className="latest-noise-reading__value latest-noise-reading__value--neutral">
+            <div className={`latest-noise-reading__value latest-noise-reading__value--${averageHealth ?? 'neutral'}`}>
               {averageMean.toFixed(1)} <span>dB</span>
             </div>
             <p className="map-average-card__count">Average of {visibleSensorCount} sensors</p>
@@ -229,6 +230,7 @@ export function LocationsOverlay({
   error,
   onResetMap,
   averageMean,
+  averageHealth,
   visibleSensorCount,
 }: LocationsOverlayProps) {
   const [isNoiseInfoOpen, setIsNoiseInfoOpen] = useState(false)
@@ -254,7 +256,7 @@ export function LocationsOverlay({
           <p className="map-status__all-off">All locations toggled off</p>
         )}
       </div>
-      <AverageCard averageMean={averageMean} visibleSensorCount={visibleSensorCount} isLoading={isLoading} error={!!error} />
+      <AverageCard averageMean={averageMean} averageHealth={averageHealth} visibleSensorCount={visibleSensorCount} isLoading={isLoading} error={!!error} />
       <NoiseInfoDialog isOpen={isNoiseInfoOpen} onClose={() => setIsNoiseInfoOpen(false)} />
     </>
   )

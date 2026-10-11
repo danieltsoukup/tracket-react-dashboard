@@ -31,8 +31,17 @@ export const LOCATION_TILE_ATTRIBUTION = '&copy; Stadia Maps, &copy; OpenMapTile
 
 export type LocationHealth = 'unhealthy' | 'active' | 'inactive'
 
+export function getMostCommonLocationHealth(counts: Record<LocationHealth, number>): LocationHealth | null {
+  const healthPriority: LocationHealth[] = ['unhealthy', 'active', 'inactive']
+  const highestCount = Math.max(...healthPriority.map((health) => counts[health]))
+
+  return highestCount > 0
+    ? healthPriority.find((health) => counts[health] === highestCount) ?? null
+    : null
+}
+
 const LOCATION_STATUS_ICONS: Record<LocationHealth, string> = {
-  unhealthy: 'warning',
+  unhealthy: 'sensors',
   active: 'sensors',
   inactive: 'sensors_off',
 }
