@@ -193,6 +193,7 @@ function SensorPage() {
                 </div>
                 <SensorPanel title="Noise History" icon="calendar_month">
                   <NoiseChart
+                    active={location.active}
                     measurements={measurements}
                     chartData={chartData}
                     granularity={granularity}

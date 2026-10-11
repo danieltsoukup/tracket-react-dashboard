@@ -4,9 +4,12 @@ import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
+import { getLocationHealth } from '../locations/locations.config.ts'
+import type { LocationHealth } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 
 type NoiseChartProps = {
+  active: boolean
   measurements: NoiseMeasurement[]
   chartData: NoiseChartData
   granularity: NoiseGranularity
@@ -31,8 +34,11 @@ type ChartTooltip = {
   top: number
   timestamp: string
   min: number
+  minHealth: LocationHealth
   mean: number
+  meanHealth: LocationHealth
   max: number
+  maxHealth: LocationHealth
 }
 
 const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
@@ -42,6 +48,7 @@ const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
 })
 
 export function NoiseChart({
+  active,
   measurements,
   chartData,
   granularity,
@@ -162,8 +169,11 @@ export function NoiseChart({
         top: pointY - 12,
         timestamp: formatSensorTimestamp(measurement.timestamp, tooltipDateFormatter),
         min: measurement.min,
+        minHealth: getLocationHealth(active, measurement.timestamp, measurement.min),
         mean: measurement.mean,
+        meanHealth: getLocationHealth(active, measurement.timestamp, measurement.mean),
         max: measurement.max,
+        maxHealth: getLocationHealth(active, measurement.timestamp, measurement.max),
       })
     }
 
@@ -181,7 +191,7 @@ export function NoiseChart({
       setTooltip(null)
       void Plotly.purge(chart)
     }
-  }, [chartData, granularity, measurements])
+  }, [active, chartData, granularity, measurements])
 
   return (
     <section className="noise-chart-panel" aria-label="Sensor noise chart">
@@ -251,15 +261,33 @@ export function NoiseChart({
             <div className="noise-chart-tooltip__date">{tooltip.timestamp}</div>
             <div className="noise-chart-tooltip__value">
               <span className="noise-chart-tooltip__label">Max</span>
-              <span>{tooltip.max.toFixed(1)} <span className="noise-chart-tooltip__unit">dB</span></span>
+              <span
+                className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.maxHealth}`}
+                style={{ width: `${tooltip.max.toFixed(1).length}ch` }}
+              >
+                {tooltip.max.toFixed(1)}
+              </span>
+              <span className="noise-chart-tooltip__unit">dB</span>
             </div>
             <div className="noise-chart-tooltip__value">
               <span className="noise-chart-tooltip__label">Avg</span>
-              <span>{tooltip.mean.toFixed(1)} <span className="noise-chart-tooltip__unit">dB</span></span>
+              <span
+                className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.meanHealth}`}
+                style={{ width: `${tooltip.mean.toFixed(1).length}ch` }}
+              >
+                {tooltip.mean.toFixed(1)}
+              </span>
+              <span className="noise-chart-tooltip__unit">dB</span>
             </div>
             <div className="noise-chart-tooltip__value">
               <span className="noise-chart-tooltip__label">Min</span>
-              <span>{tooltip.min.toFixed(1)} <span className="noise-chart-tooltip__unit">dB</span></span>
+              <span
+                className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.minHealth}`}
+                style={{ width: `${tooltip.min.toFixed(1).length}ch` }}
+              >
+                {tooltip.min.toFixed(1)}
+              </span>
+              <span className="noise-chart-tooltip__unit">dB</span>
             </div>
           </div>
         )}

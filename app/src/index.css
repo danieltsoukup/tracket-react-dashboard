@@ -285,17 +285,38 @@ body {
 }
 
 .noise-chart-tooltip__value {
-  display: grid;
-  grid-template-columns: 2.2rem 1fr;
-  align-items: baseline;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-top: 5px;
-  color: rgb(var(--rgb-alert));
+}
+
+.noise-chart-tooltip__reading {
+  box-sizing: content-box;
+  padding: 4px 7px;
+  border-radius: 5px;
+  color: rgb(var(--rgb-white));
   font-size: 1.05rem;
   font-weight: 600;
   line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.noise-chart-tooltip__reading--active {
+  background: rgb(var(--rgb-primary));
+}
+
+.noise-chart-tooltip__reading--unhealthy {
+  background: rgb(var(--rgb-alert));
+}
+
+.noise-chart-tooltip__reading--inactive {
+  background: rgb(var(--rgb-muted));
 }
 
 .noise-chart-tooltip__label {
+  min-width: 2.2rem;
   color: rgb(var(--rgb-muted));
   font-size: 0.7rem;
   font-weight: 400;
