@@ -621,6 +621,10 @@ body {
   }
 }
 
+.map-status--collapsed {
+  padding: 8px;
+}
+
 .map-status__count {
   display: inline-flex;
   align-items: center;

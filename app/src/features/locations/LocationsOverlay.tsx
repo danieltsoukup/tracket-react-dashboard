@@ -70,9 +70,19 @@ function LocationStatus({
     { key: 'active', label: 'Active', count: active },
     { key: 'inactive', label: 'Inactive', count: inactive },
   ]
+  const [isCollapsed, setIsCollapsed] = useState(() => window.matchMedia('(max-width: 640px)').matches)
+
+  useEffect(() => {
+    const smallScreen = window.matchMedia('(max-width: 640px)')
+    const updateCollapsedState = () => setIsCollapsed(smallScreen.matches)
+
+    smallScreen.addEventListener('change', updateCollapsedState)
+
+    return () => smallScreen.removeEventListener('change', updateCollapsedState)
+  }, [])
 
   return (
-    <div className="map-status" aria-live="polite">
+    <div className={isCollapsed ? 'map-status map-status--collapsed' : 'map-status'} aria-live="polite">
       {isLoading && <span>Loading locations...</span>}
       {error && <span className="map-status--error">{error}</span>}
       {!isLoading && !error && (
@@ -80,57 +90,46 @@ function LocationStatus({
           <button
             className="map-status__layer-button"
             type="button"
-            aria-label="Toggle location layers"
-            title="Toggle location layers"
-            onClick={() => {
-              const nextStatuses: Record<LocationHealth, boolean> = {
-                unhealthy: !selectedStatuses.unhealthy,
-                active: !selectedStatuses.active,
-                inactive: !selectedStatuses.inactive,
-              }
-
-              if (selectedStatuses.unhealthy !== nextStatuses.unhealthy) {
-                onToggleStatus('unhealthy')
-              }
-              if (selectedStatuses.active !== nextStatuses.active) {
-                onToggleStatus('active')
-              }
-              if (selectedStatuses.inactive !== nextStatuses.inactive) {
-                onToggleStatus('inactive')
-              }
-            }}
+            aria-label={isCollapsed ? 'Expand location status' : 'Collapse location status'}
+            aria-expanded={!isCollapsed}
+            title={isCollapsed ? 'Expand location status' : 'Collapse location status'}
+            onClick={() => setIsCollapsed((collapsed) => !collapsed)}
           >
             <span className="material-symbols-outlined" aria-hidden="true">layers</span>
           </button>
-          {statusConfig.map(({ key, label, count }) => {
-            const isSelected = selectedStatuses[key]
+          {!isCollapsed && (
+            <>
+              {statusConfig.map(({ key, label, count }) => {
+                const isSelected = selectedStatuses[key]
 
-            return (
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    className={isSelected ? 'map-status__count map-status__count--selected' : 'map-status__count map-status__count--unselected'}
+                    aria-label={`${label}: ${count}`}
+                    aria-pressed={isSelected}
+                    title={`${label}: ${count}`}
+                    onClick={() => onToggleStatus(key)}
+                  >
+                    <span className={`material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--${key}`} aria-hidden="true">
+                      {getLocationIcon(key)}
+                    </span>
+                    <span>{label}: {count}</span>
+                  </button>
+                )
+              })}
               <button
-                key={key}
+                className="map-status__info-button"
                 type="button"
-                className={isSelected ? 'map-status__count map-status__count--selected' : 'map-status__count map-status__count--unselected'}
-                aria-label={`${label}: ${count}`}
-                aria-pressed={isSelected}
-                title={`${label}: ${count}`}
-                onClick={() => onToggleStatus(key)}
+                aria-label="Noise level guidance"
+                title="Noise level guidance"
+                onClick={onOpenInfo}
               >
-                <span className={`material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--${key}`} aria-hidden="true">
-                  {getLocationIcon(key)}
-                </span>
-                <span>{label}: {count}</span>
+                <span className="material-symbols-outlined" aria-hidden="true">info</span>
               </button>
-            )
-          })}
-          <button
-            className="map-status__info-button"
-            type="button"
-            aria-label="Noise level guidance"
-            title="Noise level guidance"
-            onClick={onOpenInfo}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">info</span>
-          </button>
+            </>
+          )}
         </span>
       )}
     </div>
