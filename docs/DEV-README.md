@@ -36,10 +36,12 @@ Deploy a preview:
 vercel
 ```
 
+Note: ensure your git email matches your GitHub account otherwise vercel will block the deployment.
+
 Deploy to prod:
 
 ```
-vercel
+vercel deploy --prod
 ```
 
 ## Stadia Layers

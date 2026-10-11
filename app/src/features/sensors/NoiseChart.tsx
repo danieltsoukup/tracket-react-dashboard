@@ -178,6 +178,8 @@ export function NoiseChart({
       plot_bgcolor: chartColors.background,
       margin: { t: 24, r: 24, b: 56, l: 56 },
       hovermode: 'x',
+      hoveranywhere: true,
+      clickanywhere: true,
       showlegend: false,
       xaxis: {
         type: 'date',
@@ -194,23 +196,58 @@ export function NoiseChart({
       yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#E3E8E4', zeroline: false },
     }
 
-    const handleHover = (event: Plotly.PlotHoverEvent) => {
-      const point = event.points[0]
-      const measurement = chartData.points[point.pointNumber]?.measurement
-      const mouseEvent = event.event
+    function showMeasurementTooltip(
+      pointNumber: number | undefined,
+      xValue: unknown,
+      xPixel: number | undefined,
+      yPixel: number | undefined,
+      mouseEvent: MouseEvent | undefined,
+    ) {
+      let resolvedPointNumber = pointNumber
+      if (resolvedPointNumber === undefined || !chartData.points[resolvedPointNumber]?.measurement) {
+        const targetTimestamp = typeof xValue === 'number' ? xValue : Date.parse(String(xValue))
+        if (!Number.isFinite(targetTimestamp)) {
+          return
+        }
 
-      if (!measurement || !mouseEvent) {
+        let closestDistance = Number.POSITIVE_INFINITY
+        chartData.points.forEach((candidate, index) => {
+          if (!candidate.measurement) {
+            return
+          }
+
+          const distance = Math.abs(Date.parse(candidate.timestamp) - targetTimestamp)
+          if (distance < closestDistance) {
+            closestDistance = distance
+            resolvedPointNumber = index
+          }
+        })
+      }
+
+      if (resolvedPointNumber === undefined) {
         return
       }
 
-      const chartBounds = chart.getBoundingClientRect()
-      const pointX = point.xPixel ?? mouseEvent.clientX - chartBounds.left
-      const pointY = point.yPixel ?? mouseEvent.clientY - chartBounds.top
+      const measurement = chartData.points[resolvedPointNumber]?.measurement
+      if (!measurement) {
+        return
+      }
+
+      const chartElement = chartRef.current
+      if (!chartElement) {
+        return
+      }
+
+      const chartBounds = chartElement.getBoundingClientRect()
+      const pointX = xPixel ?? (mouseEvent ? mouseEvent.clientX - chartBounds.left : chartBounds.width / 2)
+      const pointY = yPixel ?? (mouseEvent ? mouseEvent.clientY - chartBounds.top : chartBounds.height / 2)
       const tooltipWidth = tooltipRef.current?.offsetWidth ?? 180
       const placeLeft = pointX + 14 + tooltipWidth > chartBounds.width
+      const preferredLeft = placeLeft ? pointX - tooltipWidth - 14 : pointX + 14
+      const left = Math.max(8, Math.min(preferredLeft, chartBounds.width - tooltipWidth - 8))
 
       setTooltip({
-        left: placeLeft ? pointX - tooltipWidth - 14 : pointX + 14,
+        left,
         top: pointY - 12,
         timestamp: formatSensorTimestamp(measurement.timestamp, tooltipDateFormatter),
         measurement: {
@@ -223,15 +260,36 @@ export function NoiseChart({
         },
         notes: getAnnotationsAtTime(
           timelineDataRef.current.intervals,
-          Date.parse(chartData.points[point.pointNumber].timestamp),
+          Date.parse(chartData.points[resolvedPointNumber].timestamp),
         )
           .map((annotation) => annotation.note),
       })
     }
 
+    const handleHover = (event: Plotly.PlotHoverEvent) => {
+      const point = event.points[0]
+      showMeasurementTooltip(point?.pointNumber, event.xvals[0], event.xPixel ?? point?.xPixel, event.yPixel ?? point?.yPixel, event.event)
+    }
+    const handleClick = (event: Plotly.PlotMouseEvent) => {
+      const clickEvent = event as Plotly.PlotMouseEvent & { xvals?: Plotly.PlotHoverEvent['xvals'] }
+      const point = event.points[0]
+      showMeasurementTooltip(point?.pointNumber, clickEvent.xvals?.[0], event.xPixel ?? point?.xPixel, event.yPixel ?? point?.yPixel, event.event)
+    }
+
     const plot = chart as unknown as PlotlyChartElement
     let relayoutFrame: number | null = null
-    const handleUnhover = () => setTooltip(null)
+    let touchInteraction = false
+    const handleTouchStart = () => {
+      touchInteraction = true
+    }
+    const handleMouseMove = () => {
+      touchInteraction = false
+    }
+    const handleUnhover = () => {
+      if (!touchInteraction) {
+        setTooltip(null)
+      }
+    }
     const handleRelayout = () => {
       if (relayoutFrame !== null) {
         cancelAnimationFrame(relayoutFrame)
@@ -254,14 +312,20 @@ export function NoiseChart({
 
     void Plotly.newPlot(chart, traces, layout, { responsive: true, displayModeBar: false, displaylogo: false }).then(() => {
       plot.on('plotly_hover', handleHover)
+      plot.on('plotly_click', handleClick)
       plot.on('plotly_unhover', handleUnhover)
       plot.on('plotly_relayout', handleRelayout)
     })
+    chart.addEventListener('touchstart', handleTouchStart, { passive: true })
+    chart.addEventListener('mousemove', handleMouseMove)
 
     return () => {
       plot.removeAllListeners('plotly_hover')
+      plot.removeAllListeners('plotly_click')
       plot.removeAllListeners('plotly_unhover')
       plot.removeAllListeners('plotly_relayout')
+      chart.removeEventListener('touchstart', handleTouchStart)
+      chart.removeEventListener('mousemove', handleMouseMove)
       if (relayoutFrame !== null) {
         cancelAnimationFrame(relayoutFrame)
       }
