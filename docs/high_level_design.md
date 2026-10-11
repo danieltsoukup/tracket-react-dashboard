@@ -54,6 +54,8 @@ Example:
 }
 ```
 
+The sensor noise chart displays a synchronized Notes timeline beneath the x-axis. Orange intervals represent annotation time ranges, clipped to the selected chart range. Hovering a chart point or a note interval shows every matching note in the chart tooltip; intervals are also keyboard-focusable. The timeline displays loading and empty states.
+
 - sensors: TBD
 
 Return measurements for the given location.  The timestamps will be returned for the timezone where the device is located.
@@ -91,3 +93,37 @@ https://api.tracket.info/v1/locations/572250/noise?granularity=life-time
     ...
 }
 ```
+
+- notes/annotations: fetch one or more annotations at a specific location with a time range that overlaps with a given time range.
+
+HTTP GET Parameters
+location - The location id, as provided by the locations endpoint.
+startTime - Optional start time of the sample period for annotations.
+endTime - Optional end time of the sample period for annotations.
+reAnnotation - Optional annotation id.  If specified, only annotations regarding the specified annotation will be included in the response.
+app - Optional regular expression that will be used to filter annotations based on the app.
+
+Example HTTP Requests
+https://api.tracket.info/v1/annotations?location=123&startTime=2024-04-14T00:00:00-04:00&endTime=2024-04-20T00:00:00-04:00&app=%5EWebsite%20%5Cd%2B%5C.%5Cd%2B%24
+
+HTTP Response Example (JSON)
+{
+    "annotations": [
+        {
+            "id": 123,
+            "startTime": "2024-04-14T12:04:26-04:00",
+            "endTime": "2024-04-14T12:06:26-04:00",
+            "note": "Concert",
+            "user": 234,
+            "app": "My App 1.0"
+        },{
+            "id": 456,
+            "startTime": "2024-04-17T14:04:00-04:00",
+            "endTime": "2024-04-17T15:07:00-04:00",
+            "note": "Protest",
+            "reAnnotation": 123,
+            "user": 345,
+            "app": "My App 1.1"
+        }
+    ]
+}

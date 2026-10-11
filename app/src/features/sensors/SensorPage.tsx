@@ -8,6 +8,7 @@ import { fetchLocation } from '../locations/locations.api.ts'
 import { isLocationActive } from '../locations/locations.config.ts'
 import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
+import { fetchSensorAnnotations, type Annotation } from './annotations.api.ts'
 import { LatestNoiseReading } from './LatestNoiseReading.tsx'
 import { NoiseChart } from './NoiseChart.tsx'
 import { prepareNoiseChartData, type NoiseChartData } from './noiseChartData.ts'
@@ -21,14 +22,18 @@ function SensorPage() {
   const [measurements, setMeasurements] = useState<NoiseMeasurement[]>([])
   const [chartData, setChartData] = useState<NoiseChartData>(() => prepareNoiseChartData([]))
   const [hourlyMeasurements, setHourlyMeasurements] = useState<NoiseMeasurement[]>([])
+  const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [granularity, setGranularity] = useState<NoiseGranularity>('hourly')
   const [chartStart, setChartStart] = useState('')
   const [chartEnd, setChartEnd] = useState('')
   const [isLocationLoading, setIsLocationLoading] = useState(true)
   const [isNoiseLoading, setIsNoiseLoading] = useState(false)
+  const [areAnnotationsLoading, setAreAnnotationsLoading] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [noiseError, setNoiseError] = useState<string | null>(null)
+  const [annotationError, setAnnotationError] = useState<string | null>(null)
   const measurementsCache = useRef(new Map<string, NoiseMeasurement[]>())
+  const annotationsCache = useRef(new Map<string, Annotation[]>())
   const parsedSensorId = Number(sensorId)
   const hasValidSensorId = Number.isInteger(parsedSensorId) && parsedSensorId > 0
   const isInitialLoading = isLocationLoading || (location !== null && measurements.length === 0 && isNoiseLoading)
@@ -153,6 +158,74 @@ function SensorPage() {
     }
   }, [chartEnd, chartStart, granularity, hasValidSensorId, location, parsedSensorId])
 
+  useEffect(() => {
+    if (!hasValidSensorId || !location || location.id !== parsedSensorId) {
+      setAnnotations([])
+      setAreAnnotationsLoading(false)
+      setAnnotationError(null)
+      return
+    }
+
+    if (!chartStart || !chartEnd || chartStart > chartEnd) {
+      setAnnotations([])
+      setAreAnnotationsLoading(false)
+      setAnnotationError(null)
+      return
+    }
+
+    const startTime = toSensorLocalTimestamp(chartStart, '00:00:00', location.latestTimestamp)
+    const endDateTimestamp = Date.parse(`${chartEnd}T00:00:00Z`)
+    const endDate = Number.isFinite(endDateTimestamp)
+      ? new Date(endDateTimestamp + 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      : ''
+    const endTime = toSensorLocalTimestamp(endDate, '00:00:00', location.latestTimestamp)
+
+    if (!startTime || !endTime) {
+      setAnnotations([])
+      setAreAnnotationsLoading(false)
+      setAnnotationError('Unable to determine the annotation time range.')
+      return
+    }
+
+    const cacheKey = `${parsedSensorId}:${startTime}:${endTime}`
+    const cachedAnnotations = annotationsCache.current.get(cacheKey)
+
+    if (cachedAnnotations) {
+      setAnnotations(cachedAnnotations)
+      setAreAnnotationsLoading(false)
+      setAnnotationError(null)
+      return
+    }
+
+    const controller = new AbortController()
+    let isCurrentRequest = true
+    setAnnotations([])
+    setAreAnnotationsLoading(true)
+    setAnnotationError(null)
+
+    fetchSensorAnnotations(parsedSensorId, startTime, endTime, controller.signal)
+      .then((loadedAnnotations) => {
+        if (isCurrentRequest) {
+          annotationsCache.current.set(cacheKey, loadedAnnotations)
+          setAnnotations(loadedAnnotations)
+          setAreAnnotationsLoading(false)
+        }
+      })
+      .catch((loadError: unknown) => {
+        if (!isCurrentRequest || (loadError instanceof DOMException && loadError.name === 'AbortError')) {
+          return
+        }
+
+        setAnnotationError(loadError instanceof Error ? loadError.message : 'Unable to load annotations.')
+        setAreAnnotationsLoading(false)
+      })
+
+    return () => {
+      isCurrentRequest = false
+      controller.abort()
+    }
+  }, [chartEnd, chartStart, hasValidSensorId, location, parsedSensorId])
+
   return (
     <main className="sensor-page">
       <header className="sensor-header">
@@ -181,8 +254,9 @@ function SensorPage() {
         {!isInitialLoading && !isLocationLoading && !locationError && location && (
           <>
             {noiseError && <p role="alert">{noiseError}</p>}
-            {measurements.length > 0 && (
-              <>
+            {annotationError && <p role="alert">{annotationError}</p>}
+            <>
+              {measurements.length > 0 && (
                 <div className="sensor-insights">
                   <SensorPanel title="Latest hourly recording" icon="show_chart">
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
@@ -191,22 +265,25 @@ function SensorPage() {
                     <SensorLocationMap location={location} />
                   </SensorPanel>
                 </div>
-                <SensorPanel title="Noise History" icon="calendar_month">
-                  <NoiseChart
-                    active={location.active}
-                    measurements={measurements}
-                    chartData={chartData}
-                    granularity={granularity}
-                    isLoading={isNoiseLoading}
-                    start={chartStart}
-                    end={chartEnd}
-                    onStartChange={setChartStart}
-                    onEndChange={setChartEnd}
-                    onGranularityChange={setGranularity}
-                  />
-                </SensorPanel>
-              </>
-            )}
+              )}
+              <SensorPanel title="Noise History" icon="calendar_month">
+                <NoiseChart
+                  active={location.active}
+                  measurements={measurements}
+                  chartData={chartData}
+                  granularity={granularity}
+                  isLoading={isNoiseLoading}
+                  annotations={annotations}
+                  areAnnotationsLoading={areAnnotationsLoading}
+                  annotationError={annotationError}
+                  start={chartStart}
+                  end={chartEnd}
+                  onStartChange={setChartStart}
+                  onEndChange={setChartEnd}
+                  onGranularityChange={setGranularity}
+                />
+              </SensorPanel>
+            </>
           </>
         )}
       </section>

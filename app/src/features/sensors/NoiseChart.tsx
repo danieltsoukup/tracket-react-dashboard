@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
+import type { Annotation } from './annotations.api.ts'
+import { getAnnotationsAtTime, prepareAnnotationTimelineData } from './annotationTimelineData.ts'
+import type { AnnotationTimelineInterval } from './annotationTimelineData.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
 import { getLocationHealth } from '../locations/locations.config.ts'
@@ -14,6 +17,9 @@ type NoiseChartProps = {
   chartData: NoiseChartData
   granularity: NoiseGranularity
   isLoading: boolean
+  annotations: Annotation[]
+  areAnnotationsLoading: boolean
+  annotationError: string | null
   start: string
   end: string
   onStartChange: (value: string) => void
@@ -33,12 +39,15 @@ type ChartTooltip = {
   left: number
   top: number
   timestamp: string
-  min: number
-  minHealth: LocationHealth
-  mean: number
-  meanHealth: LocationHealth
-  max: number
-  maxHealth: LocationHealth
+  measurement?: {
+    min: number
+    minHealth: LocationHealth
+    mean: number
+    meanHealth: LocationHealth
+    max: number
+    maxHealth: LocationHealth
+  }
+  notes: string[]
 }
 
 const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
@@ -53,6 +62,9 @@ export function NoiseChart({
   chartData,
   granularity,
   isLoading,
+  annotations,
+  areAnnotationsLoading,
+  annotationError,
   start,
   end,
   onStartChange,
@@ -60,8 +72,13 @@ export function NoiseChart({
   onGranularityChange,
 }: NoiseChartProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
+  const timelineRef = useRef<HTMLDivElement | null>(null)
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const [tooltip, setTooltip] = useState<ChartTooltip | null>(null)
+  const timelineData = useMemo(
+    () => prepareAnnotationTimelineData(annotations, start, end),
+    [annotations, end, start],
+  )
 
   function handleDownload() {
     const blob = new Blob([measurementsToCsv(measurements)], { type: 'text/csv;charset=utf-8' })
@@ -83,7 +100,7 @@ export function NoiseChart({
   useEffect(() => {
     const chart = chartRef.current
 
-    if (!chart || chartData.points.length === 0) {
+    if (!chart || chartData.points.length === 0 || !start || !end) {
       return
     }
 
@@ -145,6 +162,7 @@ export function NoiseChart({
         spikethickness: 1,
         spikedash: 'dot',
         zeroline: false,
+        range: [new Date(timelineData.rangeStart).toISOString(), new Date(timelineData.rangeEnd).toISOString()],
       },
       yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#E3E8E4', zeroline: false },
     }
@@ -168,12 +186,16 @@ export function NoiseChart({
         left: placeLeft ? pointX - tooltipWidth - 14 : pointX + 14,
         top: pointY - 12,
         timestamp: formatSensorTimestamp(measurement.timestamp, tooltipDateFormatter),
-        min: measurement.min,
-        minHealth: getLocationHealth(active, measurement.timestamp, measurement.min),
-        mean: measurement.mean,
-        meanHealth: getLocationHealth(active, measurement.timestamp, measurement.mean),
-        max: measurement.max,
-        maxHealth: getLocationHealth(active, measurement.timestamp, measurement.max),
+        measurement: {
+          min: measurement.min,
+          minHealth: getLocationHealth(active, measurement.timestamp, measurement.min),
+          mean: measurement.mean,
+          meanHealth: getLocationHealth(active, measurement.timestamp, measurement.mean),
+          max: measurement.max,
+          maxHealth: getLocationHealth(active, measurement.timestamp, measurement.max),
+        },
+        notes: getAnnotationsAtTime(timelineData.intervals, Date.parse(chartData.points[point.pointNumber].timestamp))
+          .map((annotation) => annotation.note),
       })
     }
 
@@ -191,7 +213,42 @@ export function NoiseChart({
       setTooltip(null)
       void Plotly.purge(chart)
     }
-  }, [active, chartData, granularity, measurements])
+  }, [active, chartData, granularity, measurements, start, end, timelineData])
+
+  function showTimelineTooltip(interval: AnnotationTimelineInterval, clientX?: number, includeOverlaps = false) {
+    const timeline = timelineRef.current
+    const chart = chartRef.current
+
+    if (!timeline || !chart) {
+      return
+    }
+
+    const bounds = timeline.getBoundingClientRect()
+    const fraction = clientX === undefined
+      ? (interval.start + interval.end) / 2
+      : timelineData.rangeStart +
+        Math.max(0, Math.min(1, (clientX - bounds.left) / bounds.width)) *
+          (timelineData.rangeEnd - timelineData.rangeStart)
+    const notes = includeOverlaps
+      ? timelineData.intervals
+          .filter((candidate) => candidate.start < interval.end && candidate.end > interval.start)
+          .map((candidate) => candidate.annotation.note)
+      : getAnnotationsAtTime(timelineData.intervals, fraction).map((annotation) => annotation.note)
+    const anchorX = clientX === undefined ? bounds.left + ((interval.left + interval.width / 2) / 100) * bounds.width : clientX
+    const chartBounds = chart.getBoundingClientRect()
+    const tooltipWidth = tooltipRef.current?.offsetWidth ?? 180
+    const pointX = anchorX - chartBounds.left
+    const left = pointX + 14 + tooltipWidth > chartBounds.width
+      ? Math.max(0, pointX - tooltipWidth - 14)
+      : pointX + 14
+
+    setTooltip({
+      left,
+      top: chart.offsetHeight + 10,
+      timestamp: formatSensorTimestamp(new Date(fraction).toISOString(), tooltipDateFormatter),
+      notes,
+    })
+  }
 
   return (
     <section className="noise-chart-panel" aria-label="Sensor noise chart">
@@ -251,6 +308,54 @@ export function NoiseChart({
       </div>
       <div className="noise-chart-container">
         <div ref={chartRef} className="noise-chart" aria-label="Sensor noise over time" />
+        <div className="noise-chart-notes">
+          <span className="noise-chart-notes__label">Notes</span>
+          <div
+            ref={timelineRef}
+            className="noise-chart-notes__track"
+            role="group"
+            aria-label="Notes timeline"
+            onMouseLeave={() => setTooltip(null)}
+            onMouseMove={(event) => {
+              const activeInterval = timelineData.intervals.find((interval) => {
+                const bounds = timelineRef.current?.getBoundingClientRect()
+                if (!bounds) {
+                  return false
+                }
+                const time = timelineData.rangeStart +
+                  ((event.clientX - bounds.left) / bounds.width) * (timelineData.rangeEnd - timelineData.rangeStart)
+                return time >= interval.start && time < interval.end
+              })
+
+              if (activeInterval) {
+                showTimelineTooltip(activeInterval, event.clientX)
+              } else {
+                setTooltip(null)
+              }
+            }}
+          >
+            {timelineData.intervals.map((interval) => (
+              <button
+                key={interval.annotation.id}
+                type="button"
+                className="noise-chart-notes__interval"
+                style={{ left: `${interval.left}%`, width: `${interval.width}%` }}
+                aria-label={`${interval.annotation.note}, ${formatSensorTimestamp(interval.annotation.startTime, tooltipDateFormatter)} to ${formatSensorTimestamp(interval.annotation.endTime, tooltipDateFormatter)}`}
+                title={interval.annotation.note}
+                onFocus={() => showTimelineTooltip(interval, undefined, true)}
+                onBlur={() => setTooltip(null)}
+                onMouseEnter={(event) => showTimelineTooltip(interval, event.clientX)}
+              />
+            ))}
+          </div>
+          <span aria-hidden="true" />
+        </div>
+        {areAnnotationsLoading && (
+          <p className="noise-chart-notes__status" role="status">Loading notes...</p>
+        )}
+        {!areAnnotationsLoading && !annotationError && timelineData.intervals.length === 0 && (
+          <p className="noise-chart-notes__status">No notes available.</p>
+        )}
         {tooltip && (
           <div
             ref={tooltipRef}
@@ -259,36 +364,46 @@ export function NoiseChart({
             role="status"
           >
             <div className="noise-chart-tooltip__date">{tooltip.timestamp}</div>
-            <div className="noise-chart-tooltip__value">
-              <span className="noise-chart-tooltip__label">Max</span>
-              <span
-                className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.maxHealth}`}
-                style={{ width: `${tooltip.max.toFixed(1).length}ch` }}
-              >
-                {tooltip.max.toFixed(1)}
-              </span>
-              <span className="noise-chart-tooltip__unit">dB</span>
-            </div>
-            <div className="noise-chart-tooltip__value">
-              <span className="noise-chart-tooltip__label">Avg</span>
-              <span
-                className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.meanHealth}`}
-                style={{ width: `${tooltip.mean.toFixed(1).length}ch` }}
-              >
-                {tooltip.mean.toFixed(1)}
-              </span>
-              <span className="noise-chart-tooltip__unit">dB</span>
-            </div>
-            <div className="noise-chart-tooltip__value">
-              <span className="noise-chart-tooltip__label">Min</span>
-              <span
-                className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.minHealth}`}
-                style={{ width: `${tooltip.min.toFixed(1).length}ch` }}
-              >
-                {tooltip.min.toFixed(1)}
-              </span>
-              <span className="noise-chart-tooltip__unit">dB</span>
-            </div>
+            {tooltip.measurement && (
+              <>
+                <div className="noise-chart-tooltip__value">
+                  <span className="noise-chart-tooltip__label">Max</span>
+                  <span
+                    className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.measurement.maxHealth}`}
+                    style={{ width: `${tooltip.measurement.max.toFixed(1).length}ch` }}
+                  >
+                    {tooltip.measurement.max.toFixed(1)}
+                  </span>
+                  <span className="noise-chart-tooltip__unit">dB</span>
+                </div>
+                <div className="noise-chart-tooltip__value">
+                  <span className="noise-chart-tooltip__label">Avg</span>
+                  <span
+                    className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.measurement.meanHealth}`}
+                    style={{ width: `${tooltip.measurement.mean.toFixed(1).length}ch` }}
+                  >
+                    {tooltip.measurement.mean.toFixed(1)}
+                  </span>
+                  <span className="noise-chart-tooltip__unit">dB</span>
+                </div>
+                <div className="noise-chart-tooltip__value">
+                  <span className="noise-chart-tooltip__label">Min</span>
+                  <span
+                    className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${tooltip.measurement.minHealth}`}
+                    style={{ width: `${tooltip.measurement.min.toFixed(1).length}ch` }}
+                  >
+                    {tooltip.measurement.min.toFixed(1)}
+                  </span>
+                  <span className="noise-chart-tooltip__unit">dB</span>
+                </div>
+              </>
+            )}
+            {tooltip.notes.length > 0 && (
+              <div className="noise-chart-tooltip__notes">
+                <span className="noise-chart-tooltip__label">Notes</span>
+                {tooltip.notes.map((note, index) => <p key={`${index}:${note}`}>{note}</p>)}
+              </div>
+            )}
           </div>
         )}
         {isLoading && (
