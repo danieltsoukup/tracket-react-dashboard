@@ -3,7 +3,7 @@
  * @description This file contains the overlay component for the locations map, including the reset button, status display, and noise level guidance dialog.
  */
 import { useEffect, useRef, useState } from 'react'
-import type { LocationHealth } from './locations.config.ts'
+import { getLocationIcon, type LocationHealth } from './locations.config.ts'
 
 type LocationCounts = {
   unhealthy: number
@@ -64,10 +64,10 @@ function LocationStatus({
   error,
   onOpenInfo,
 }: LocationStatusProps) {
-  const statusConfig: Array<{ key: LocationHealth; label: string; icon: string; count: number }> = [
-    { key: 'unhealthy', label: 'Over limit', icon: 'sensors', count: unhealthy },
-    { key: 'active', label: 'Active', icon: 'sensors', count: active },
-    { key: 'inactive', label: 'Inactive', icon: 'sensors_off', count: inactive },
+  const statusConfig: Array<{ key: LocationHealth; label: string; count: number }> = [
+    { key: 'unhealthy', label: 'Over limit', count: unhealthy },
+    { key: 'active', label: 'Active', count: active },
+    { key: 'inactive', label: 'Inactive', count: inactive },
   ]
 
   return (
@@ -101,7 +101,7 @@ function LocationStatus({
           >
             <span className="material-symbols-outlined" aria-hidden="true">layers</span>
           </button>
-          {statusConfig.map(({ key, label, icon, count }) => {
+          {statusConfig.map(({ key, label, count }) => {
             const isSelected = selectedStatuses[key]
 
             return (
@@ -115,7 +115,7 @@ function LocationStatus({
                 onClick={() => onToggleStatus(key)}
               >
                 <span className={`material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--${key}`} aria-hidden="true">
-                  {icon}
+                  {getLocationIcon(key)}
                 </span>
                 <span>{label}: {count}</span>
               </button>
@@ -234,7 +234,6 @@ export function LocationsOverlay({
         )}
       </div>
       <section className="map-average-card" aria-label="Average latest hourly noise reading">
-        <p className="sensor-panel__eyebrow">Current view average</p>
         {isLoading ? (
           <p className="map-average-card__message">Loading...</p>
         ) : error ? (
@@ -243,10 +242,10 @@ export function LocationsOverlay({
           <p className="map-average-card__message">No sensors in view</p>
         ) : (
           <>
-            <div className="latest-noise-reading__value latest-noise-reading__value--active">
+            <div className="latest-noise-reading__value latest-noise-reading__value--neutral">
               {averageMean.toFixed(1)} <span>dB</span>
             </div>
-            <p className="map-average-card__count">{visibleSensorCount} sensors</p>
+            <p className="map-average-card__count">Average of {visibleSensorCount} sensors</p>
           </>
         )}
       </section>

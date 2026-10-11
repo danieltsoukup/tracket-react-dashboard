@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, isLocationActive } from './locations.config.ts'
+import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, getLocationIcon, isLocationActive } from './locations.config.ts'
 
 function timestampAtHour(hour: number) {
   return new Date(Date.UTC(2026, 0, 15, hour, 0, 0)).toISOString()
@@ -58,5 +58,13 @@ describe('getLocationColor', () => {
     expect(getLocationColor(false, timestampAtHour(12), 0)).toBe(LOCATION_STATUS_COLORS.inactive)
     expect(getLocationColor(true, timestampAtHour(12), 55)).toBe(LOCATION_STATUS_COLORS.active)
     expect(getLocationColor(true, timestampAtHour(12), 55.1)).toBe(LOCATION_STATUS_COLORS.alert)
+  })
+})
+
+describe('getLocationIcon', () => {
+  it('maps each health classification to its status icon', () => {
+    expect(getLocationIcon('unhealthy')).toBe('warning')
+    expect(getLocationIcon('active')).toBe('sensors')
+    expect(getLocationIcon('inactive')).toBe('sensors_off')
   })
 })

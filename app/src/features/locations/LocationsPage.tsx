@@ -16,6 +16,7 @@ import {
   LOCATION_TILE_URL,
   getLocationColor,
   getLocationHealth,
+  getLocationIcon,
   isLocationActive,
   type LocationHealth,
 } from './locations.config.ts'
@@ -43,9 +44,10 @@ function formatMeasurementDate(timestamp: string) {
 }
 
 function getLocationInfo(location: Location) {
+  const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
   const color = getLocationColor(location.active, location.hourEnd, location.hourMean)
   const meanNoise = location.hourMean.toFixed(1)
-  const sensorIcon = location.active ? 'sensors' : 'sensors_off'
+  const sensorIcon = getLocationIcon(health)
 
   return `<div class="location-tooltip__label"><span class="material-symbols-outlined" style="color: ${color}" aria-hidden="true">${sensorIcon}</span><span class="location-tooltip__title">${location.label}</span></div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.hourEnd)}</div>`
 }

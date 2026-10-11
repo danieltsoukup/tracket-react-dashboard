@@ -31,6 +31,16 @@ export const LOCATION_TILE_ATTRIBUTION = '&copy; Stadia Maps, &copy; OpenMapTile
 
 export type LocationHealth = 'unhealthy' | 'active' | 'inactive'
 
+const LOCATION_STATUS_ICONS: Record<LocationHealth, string> = {
+  unhealthy: 'warning',
+  active: 'sensors',
+  inactive: 'sensors_off',
+}
+
+export function getLocationIcon(health: LocationHealth): string {
+  return LOCATION_STATUS_ICONS[health]
+}
+
 const ACTIVE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 export function isLocationActive(latestTimestamp: string, now = Date.now()): boolean {

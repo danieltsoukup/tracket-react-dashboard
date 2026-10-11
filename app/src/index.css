@@ -197,6 +197,10 @@ body {
   line-height: 0.95;
 }
 
+.latest-noise-reading__value--neutral {
+  color: rgb(var(--rgb-muted));
+}
+
 .latest-noise-reading__value--unhealthy,
 .latest-noise-reading__change--up {
   color: rgb(var(--rgb-alert));
