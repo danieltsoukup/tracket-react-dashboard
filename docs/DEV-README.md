@@ -2,11 +2,45 @@
 
 ## Run Locally & Build
 
-Todo
+Test locally:
+
+```
+npm run dev
+```
+
+Test, lint and buils:
+
+```
+npm run test
+npm run lint
+npm run build
+```
 
 ## Deploy to Vercel
 
-Todo
+Install the CLI:
+
+```
+npm i -g vercel
+```
+
+Login:
+
+```
+vercel login
+```
+
+Deploy a preview:
+
+```
+vercel
+```
+
+Deploy to prod:
+
+```
+vercel
+```
 
 ## Stadia Layers
 
