@@ -184,6 +184,7 @@ function SensorPage() {
       setAnnotations([])
       setAreAnnotationsLoading(false)
       setAnnotationError('Unable to determine the annotation time range.')
+      console.error('Unable to determine the annotation time range.')
       return
     }
 
@@ -217,6 +218,7 @@ function SensorPage() {
         }
 
         setAnnotationError(loadError instanceof Error ? loadError.message : 'Unable to load annotations.')
+        console.error('Failed to load sensor annotations.', loadError)
         setAreAnnotationsLoading(false)
       })
 
@@ -254,7 +256,6 @@ function SensorPage() {
         {!isInitialLoading && !isLocationLoading && !locationError && location && (
           <>
             {noiseError && <p role="alert">{noiseError}</p>}
-            {annotationError && <p role="alert">{annotationError}</p>}
             <>
               {measurements.length > 0 && (
                 <div className="sensor-insights">
