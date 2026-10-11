@@ -3,7 +3,11 @@ import type { KeyboardEvent } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 import type { Annotation } from './annotations.api.ts'
-import { getAnnotationsAtTime, prepareAnnotationTimelineData } from './annotationTimelineData.ts'
+import {
+  getAnnotationsAtTime,
+  prepareAnnotationTimelineData,
+  prepareAnnotationTimelineDataForRange,
+} from './annotationTimelineData.ts'
 import type { AnnotationTimelineInterval } from './annotationTimelineData.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
@@ -75,10 +79,22 @@ export function NoiseChart({
   const timelineRef = useRef<HTMLDivElement | null>(null)
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const [tooltip, setTooltip] = useState<ChartTooltip | null>(null)
-  const timelineData = useMemo(
+  const [visibleRange, setVisibleRange] = useState<[number, number] | null>(null)
+  const chartRangeData = useMemo(
     () => prepareAnnotationTimelineData(annotations, start, end),
     [annotations, end, start],
   )
+  const timelineData = useMemo(
+    () => visibleRange
+      ? prepareAnnotationTimelineDataForRange(annotations, visibleRange[0], visibleRange[1])
+      : chartRangeData,
+    [annotations, chartRangeData, visibleRange],
+  )
+  const timelineDataRef = useRef(timelineData)
+
+  useEffect(() => {
+    timelineDataRef.current = timelineData
+  }, [timelineData])
 
   function handleDownload() {
     const blob = new Blob([measurementsToCsv(measurements)], { type: 'text/csv;charset=utf-8' })
@@ -101,8 +117,11 @@ export function NoiseChart({
     const chart = chartRef.current
 
     if (!chart || chartData.points.length === 0 || !start || !end) {
+      setVisibleRange(null)
       return
     }
+
+    setVisibleRange(null)
 
     const lineWidths = granularity === 'hourly' ? { range: 1, mean: 3 } : { range: 0.5, mean: 1.5 }
     const traces: Plotly.Data[] = []
@@ -162,7 +181,7 @@ export function NoiseChart({
         spikethickness: 1,
         spikedash: 'dot',
         zeroline: false,
-        range: [new Date(timelineData.rangeStart).toISOString(), new Date(timelineData.rangeEnd).toISOString()],
+        range: [new Date(chartRangeData.rangeStart).toISOString(), new Date(chartRangeData.rangeEnd).toISOString()],
       },
       yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#E3E8E4', zeroline: false },
     }
@@ -194,26 +213,50 @@ export function NoiseChart({
           max: measurement.max,
           maxHealth: getLocationHealth(active, measurement.timestamp, measurement.max),
         },
-        notes: getAnnotationsAtTime(timelineData.intervals, Date.parse(chartData.points[point.pointNumber].timestamp))
+        notes: getAnnotationsAtTime(
+          timelineDataRef.current.intervals,
+          Date.parse(chartData.points[point.pointNumber].timestamp),
+        )
           .map((annotation) => annotation.note),
       })
     }
 
     const handleUnhover = () => setTooltip(null)
+    const handleRelayout = (event: Plotly.PlotRelayoutEvent) => {
+      if (event['xaxis.autorange'] === true) {
+        setVisibleRange(null)
+        return
+      }
+
+      const startValue = event['xaxis.range[0]']
+      const endValue = event['xaxis.range[1]']
+      const parseRangeValue = (value: unknown) => (
+        typeof value === 'number' ? value : typeof value === 'string' ? Date.parse(value) : Number.NaN
+      )
+      const rangeStart = parseRangeValue(startValue)
+      const rangeEnd = parseRangeValue(endValue)
+
+      if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd) && rangeEnd > rangeStart) {
+        setVisibleRange([rangeStart, rangeEnd])
+      }
+    }
+
     const plot = chart as unknown as Plotly.PlotlyHTMLElement
 
     void Plotly.newPlot(chart, traces, layout, { responsive: true, displayModeBar: false, displaylogo: false }).then(() => {
       plot.on('plotly_hover', handleHover)
       plot.on('plotly_unhover', handleUnhover)
+      plot.on('plotly_relayout', handleRelayout)
     })
 
     return () => {
       plot.removeAllListeners('plotly_hover')
       plot.removeAllListeners('plotly_unhover')
+      plot.removeAllListeners('plotly_relayout')
       setTooltip(null)
       void Plotly.purge(chart)
     }
-  }, [active, chartData, granularity, measurements, start, end, timelineData])
+  }, [active, chartData, chartRangeData, granularity, measurements, start, end])
 
   function showTimelineTooltip(interval: AnnotationTimelineInterval, clientX?: number, includeOverlaps = false) {
     const timeline = timelineRef.current
