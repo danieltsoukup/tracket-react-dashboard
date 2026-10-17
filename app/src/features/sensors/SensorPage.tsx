@@ -275,7 +275,7 @@ function SensorPage() {
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
                   <SensorPanel title="Last week daily average" icon="show_chart">
-                    <HourlyProfile measurements={profileMeasurements} />
+                    <HourlyProfile active={location.active} measurements={profileMeasurements} />
                   </SensorPanel>
                   <SensorPanel title={location.label} icon="location_on">
                     <SensorLocationMap location={location} />

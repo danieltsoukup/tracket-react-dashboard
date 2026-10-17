@@ -260,6 +260,10 @@ body {
   border-radius: 25px;
 }
 
+.hourly-profile {
+  position: relative;
+}
+
 .hourly-profile-chart {
   overflow: hidden;
   width: 100%;

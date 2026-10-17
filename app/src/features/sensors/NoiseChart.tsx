@@ -15,6 +15,7 @@ import { getLocationHealth } from '../locations/locations.config.ts'
 import type { LocationHealth } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 import { chartColors } from '../config.ts'
+import type { ChartTooltip } from './chartTooltip.ts'
 
 type NoiseChartProps = {
   active: boolean
@@ -30,21 +31,6 @@ type NoiseChartProps = {
   onStartChange: (value: string) => void
   onEndChange: (value: string) => void
   onGranularityChange: (granularity: NoiseGranularity) => void
-}
-
-type ChartTooltip = {
-  left: number
-  top: number
-  timestamp: string
-  measurement?: {
-    min: number
-    minHealth: LocationHealth
-    mean: number
-    meanHealth: LocationHealth
-    max: number
-    maxHealth: LocationHealth
-  }
-  notes: string[]
 }
 
 type PlotlyChartElement = Plotly.PlotlyHTMLElement & {
@@ -196,6 +182,10 @@ export function NoiseChart({
       yPixel: number | undefined,
       mouseEvent: MouseEvent | undefined,
     ) {
+      /*
+        * Show the tooltip for a specific measurement point in the chart.
+        * The function determines the closest measurement point to the given xValue and displays the tooltip with its details.
+      */ 
       let resolvedPointNumber = pointNumber
       if (resolvedPointNumber === undefined || !chartData.points[resolvedPointNumber]?.measurement) {
         const targetTimestamp = typeof xValue === 'number' ? xValue : Date.parse(String(xValue))
@@ -260,10 +250,18 @@ export function NoiseChart({
     }
 
     const handleHover = (event: Plotly.PlotHoverEvent) => {
+      /*
+        * Handle chart hover events to show the tooltip for the hovered measurement.
+        * This is used to allow users to hover over a point in the chart and see the tooltip with the measurement details.
+      */
       const point = event.points[0]
       showMeasurementTooltip(point?.pointNumber, event.xvals[0], event.xPixel ?? point?.xPixel, event.yPixel ?? point?.yPixel, event.event)
     }
     const handleClick = (event: Plotly.PlotMouseEvent) => {
+      /*
+        * Handle chart click events to show the tooltip for the clicked measurement.
+        * This is used to allow users to click on a point in the chart and see the tooltip with the measurement details.
+      */
       const clickEvent = event as Plotly.PlotMouseEvent & { xvals?: Plotly.PlotHoverEvent['xvals'] }
       const point = event.points[0]
       showMeasurementTooltip(point?.pointNumber, clickEvent.xvals?.[0], event.xPixel ?? point?.xPixel, event.yPixel ?? point?.yPixel, event.event)
@@ -289,6 +287,10 @@ export function NoiseChart({
       }
 
       relayoutFrame = requestAnimationFrame(() => {
+        /*
+          * Handle chart relayout events to update the visible range of the chart.
+          * This is used to update the timeline data for the notes timeline.
+        */
         relayoutFrame = null
         const axisRange = plot._fullLayout?.xaxis?.range
         const parseRangeValue = (value: unknown) => (

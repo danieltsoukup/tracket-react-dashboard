@@ -1,15 +1,32 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { prepareHourlyProfileData } from './hourlyProfileData.ts'
 import { chartColors } from '../config.ts'
+import { getLocationHealth } from '../locations/locations.config.ts'
+import type { LocationHealth } from '../locations/locations.config.ts'
+
+type HourlyProfileTooltip = {
+  left: number
+  top: number
+  hour: number
+  min: number
+  max: number
+  mean: number
+  minHealth: LocationHealth
+  maxHealth: LocationHealth
+  meanHealth: LocationHealth
+}
 
 type HourlyProfileProps = {
+  active: boolean
   measurements: NoiseMeasurement[]
 }
 
-export function HourlyProfile({ measurements }: HourlyProfileProps) {
+export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
+  const [tooltip, setTooltip] = useState<HourlyProfileTooltip | null>(null)
   const profile = useMemo(() => prepareHourlyProfileData(measurements), [measurements])
   const hasProfileData = profile.some((point) => point.count > 0)
 
@@ -69,29 +86,151 @@ export function HourlyProfile({ measurements }: HourlyProfileProps) {
         gridcolor: chartColors.grid,
         zeroline: false,
         fixedrange: true,
+        showspikes: true,
+        spikemode: 'across',
+        spikesnap: 'cursor',
+        spikecolor: chartColors.spike,
+        spikethickness: 1,
+        spikedash: 'dot',
       },
-      yaxis: { 
-        title: { text: 'Noise (dB)' },
-        gridcolor: chartColors.grid,
-        zeroline: false,
-        fixedrange: true,
-      },
-    }
+        yaxis: {
+          title: { text: 'Noise (dB)' },
+          gridcolor: chartColors.grid,
+          zeroline: false,
+          fixedrange: true,
+        },
+        hovermode: 'x',
+        hoveranywhere: true,
+        clickanywhere: true,
+      }
 
-    void Plotly.newPlot(chart, traces, layout, {
-      responsive: true,
-      displayModeBar: false,
-      displaylogo: false,
-    })
+      const plot = chart as unknown as Plotly.PlotlyHTMLElement
+      let disposed = false
 
-    return () => {
-      void Plotly.purge(chart)
-    }
-  }, [hasProfileData, profile])
+      function showHourTooltip(
+        pointNumber: number | undefined,
+        xValue: unknown,
+        xPixel: number | undefined,
+        yPixel: number | undefined,
+        mouseEvent: MouseEvent | undefined,
+      ) {
+        let hour = pointNumber
+
+        if (hour === undefined || !profile[hour]?.count) {
+          const targetHour = typeof xValue === 'number' ? xValue : Number(xValue)
+          if (!Number.isFinite(targetHour)) {
+            return
+          }
+
+          let closestDistance = Number.POSITIVE_INFINITY
+          profile.forEach((point) => {
+            if (point.count === 0) {
+              return
+            }
+
+            const distance = Math.abs(point.hour - targetHour)
+            if (distance < closestDistance) {
+              closestDistance = distance
+              hour = point.hour
+            }
+          })
+        }
+
+        if (hour === undefined) {
+          return
+        }
+
+        const point = profile[hour]
+        if (!point || point.count === 0 || point.min === null || point.max === null || point.mean === null) {
+          return
+        }
+
+        const bounds = chart.getBoundingClientRect()
+        const pointX = xPixel ?? (mouseEvent ? mouseEvent.clientX - bounds.left : bounds.width / 2)
+        const pointY = yPixel ?? (mouseEvent ? mouseEvent.clientY - bounds.top : bounds.height / 2)
+        const tooltipWidth = tooltipRef.current?.offsetWidth ?? 180
+        const preferredLeft = pointX + 14 + tooltipWidth > bounds.width ? pointX - tooltipWidth - 14 : pointX + 14
+        const left = Math.max(8, Math.min(preferredLeft, bounds.width - tooltipWidth - 8))
+
+        setTooltip({
+          left,
+          top: pointY - 12,
+          hour: point.hour,
+          min: point.min,
+          max: point.max,
+          mean: point.mean,
+          minHealth: getLocationHealth(active, `2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.min),
+          maxHealth: getLocationHealth(active, `2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.max),
+          meanHealth: getLocationHealth(active, `2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.mean),
+        })
+      }
+
+      const handleHover = (event: Plotly.PlotHoverEvent) => {
+        const point = event.points[0]
+        showHourTooltip(point?.pointNumber, event.xvals[0], event.xPixel ?? point?.xPixel, event.yPixel ?? point?.yPixel, event.event)
+      }
+      const handleClick = (event: Plotly.PlotMouseEvent) => {
+        const clickEvent = event as Plotly.PlotMouseEvent & { xvals?: Plotly.PlotHoverEvent['xvals'] }
+        const point = event.points[0]
+        showHourTooltip(point?.pointNumber, clickEvent.xvals?.[0], event.xPixel ?? point?.xPixel, event.yPixel ?? point?.yPixel, event.event)
+      }
+      const handleUnhover = () => setTooltip(null)
+
+      void Plotly.newPlot(chart, traces, layout, {
+        responsive: true,
+        displayModeBar: false,
+        displaylogo: false,
+      }).then(() => {
+        if (!disposed) {
+          plot.on('plotly_hover', handleHover)
+          plot.on('plotly_click', handleClick)
+          plot.on('plotly_unhover', handleUnhover)
+        }
+      })
+
+      return () => {
+        disposed = true
+        plot.removeAllListeners('plotly_hover')
+        plot.removeAllListeners('plotly_click')
+        plot.removeAllListeners('plotly_unhover')
+        setTooltip(null)
+        void Plotly.purge(chart)
+      }
+  }, [active, hasProfileData, profile])
 
   if (!hasProfileData) {
     return <p className="hourly-profile__empty">No hourly profile data available.</p>
   }
 
-  return <div ref={chartRef} className="hourly-profile-chart" aria-label="Average noise by hour of day" />
+  return (
+    <div className="hourly-profile">
+      <div ref={chartRef} className="hourly-profile-chart" aria-label="Average noise by hour of day" />
+      {tooltip && (
+        <div
+          ref={tooltipRef}
+          className="noise-chart-tooltip hourly-profile-tooltip"
+          style={{ left: tooltip.left, top: tooltip.top }}
+          role="status"
+        >
+          <div className="noise-chart-tooltip__date">{`${String(tooltip.hour).padStart(2, '0')}:00–${String((tooltip.hour + 1) % 24).padStart(2, '0')}:00`}</div>
+          {([
+            ['Max', tooltip.max, tooltip.maxHealth],
+            ['Mean', tooltip.mean, tooltip.meanHealth],
+            ['Min', tooltip.min, tooltip.minHealth],
+          ] as const).map(([label, value, health]) => (
+            <div className="noise-chart-tooltip__value" key={label}>
+              <span className="noise-chart-tooltip__label">{label}</span>
+              <span
+                className={`noise-chart-tooltip__reading noise-chart-tooltip__reading--${health}`}
+                style={{ width: `${value.toFixed(1).length}ch` }}
+              >
+                {value.toFixed(1)}
+              </span>
+              <span className="noise-chart-tooltip__unit">dB</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
