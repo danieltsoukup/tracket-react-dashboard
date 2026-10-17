@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { prepareHourlyProfileData } from './hourlyProfileData.ts'
-import { chartColors, dayNightIcons } from '../config.ts'
+import { chartColors, chartFont, dayNightIcons } from '../config.ts'
 import { getTimeOfDayIcon } from './chartTooltip.ts'
 import type { TimeOfDayIcon } from './chartTooltip.ts'
 import {
@@ -152,19 +152,16 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
       autosize: true,
       paper_bgcolor: chartColors.background,
       plot_bgcolor: chartColors.background,
+      font: chartFont,
       margin: { t: 32, r: 16, b: 48, l: 48 },
       showlegend: false,
       xaxis: {
         title: {
           text: profileDateRange,
           standoff: 10,
-          font: {
-            family: 'Inter, sans-serif',
-            size: 12,
-            color: 'rgb(113, 128, 120)',
-            weight: 600,
-          },
+          font: chartFont,
         },
+        tickfont: chartFont,
         tickmode: 'array',
         tickvals: [0, 6, 12, 18, 24],
         ticktext: ['00:00', '06:00', '12:00', '18:00', '00:00'],
@@ -180,7 +177,8 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
         spikedash: 'dot',
       },
       yaxis: {
-        title: { text: 'Noise (dB)' },
+        title: { text: 'Noise (dB)', font: chartFont },
+        tickfont: chartFont,
         range: [minimumValue, null],
         autorange: 'max',
         gridcolor: chartColors.grid,

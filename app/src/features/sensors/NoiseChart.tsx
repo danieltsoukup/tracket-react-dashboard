@@ -18,7 +18,7 @@ import {
   LOCATION_HEALTH_THRESHOLDS,
 } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
-import { chartColors, dayNightIcons } from '../config.ts'
+import { chartColors, chartFont, dayNightIcons } from '../config.ts'
 import { getTimeOfDayIcon } from './chartTooltip.ts'
 import type { ChartTooltip } from './chartTooltip.ts'
 
@@ -81,7 +81,7 @@ function getMaximumIndicatorLayout(maximum: number | null): Partial<Plotly.Layou
       xanchor: 'left',
       yanchor: 'bottom',
       yshift: 4,
-      font: { color: chartColors.spike },
+      font: { ...chartFont, color: chartColors.spike },
     }],
   }
 }
@@ -187,7 +187,7 @@ export function NoiseChart({
       xanchor: 'left',
       yanchor: 'bottom',
       yshift: 4,
-      font: { color: chartColors.spike },
+      font: { ...chartFont, color: chartColors.spike },
     }))
     const dayDuration = 24 * 60 * 60 * 1000
 
@@ -278,6 +278,7 @@ export function NoiseChart({
       autosize: true,
       paper_bgcolor: chartColors.background,
       plot_bgcolor: chartColors.background,
+      font: chartFont,
       margin: { t: 48, r: 24, b: 56, l: 56 },
       hovermode: 'x',
       hoveranywhere: true,
@@ -285,6 +286,7 @@ export function NoiseChart({
       showlegend: false,
       xaxis: {
         type: 'date',
+        tickfont: chartFont,
         gridcolor: chartColors.grid,
         showspikes: true,
         spikemode: 'across',
@@ -295,7 +297,12 @@ export function NoiseChart({
         zeroline: false,
         range: [new Date(chartRangeData.rangeStart).toISOString(), new Date(chartRangeData.rangeEnd).toISOString()],
       },
-      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: chartColors.grid, zeroline: false },
+      yaxis: {
+        title: { text: 'Noise (dB)', font: chartFont },
+        tickfont: chartFont,
+        gridcolor: chartColors.grid,
+        zeroline: false,
+      },
       ...chartIndicatorLayout,
     }
 

@@ -15,6 +15,13 @@ export const chartColors = {
   nightzone: '#E3E8E4',
 }
 
+export const chartFont = {
+  family: 'Inter, sans-serif',
+  size: 12,
+  color: 'rgb(113, 128, 120)',
+  weight: 600,
+} as const
+
 export const dayNightIcons = {
   day: 'sunny',
   night: 'bedtime',
