@@ -11,7 +11,11 @@ import {
 import type { AnnotationTimelineInterval } from './annotationTimelineData.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
-import { getLocationHealth, LOCATION_HEALTH_HOURS } from '../locations/locations.config.ts'
+import {
+  getLocationHealth,
+  LOCATION_HEALTH_HOURS,
+  LOCATION_HEALTH_THRESHOLDS,
+} from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 import { chartColors } from '../config.ts'
 import { getTimeOfDayIcon } from './chartTooltip.ts'
@@ -151,6 +155,38 @@ export function NoiseChart({
       null,
     )
     const dayNightShapes: NonNullable<Plotly.Layout['shapes']> = []
+    const healthThresholdLines = [
+      {
+        value: LOCATION_HEALTH_THRESHOLDS.nighttime,
+        icon: 'bedtime',
+      },
+      {
+        value: LOCATION_HEALTH_THRESHOLDS.daytime,
+        icon: 'sunny',
+      },
+    ]
+    const healthThresholdShapes: NonNullable<Plotly.Layout['shapes']> = healthThresholdLines.map(({ value }) => ({
+      type: 'line',
+      xref: 'paper',
+      x0: 0,
+      x1: 1,
+      yref: 'y',
+      y0: value,
+      y1: value,
+      line: { color: chartColors.spike, width: 1, dash: 'dash' },
+    }))
+    const healthThresholdAnnotations: NonNullable<Plotly.Layout['annotations']> = healthThresholdLines.map(({ value, icon }) => ({
+      xref: 'paper',
+      x: 0,
+      yref: 'y',
+      y: value,
+      text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span> health limit`,
+      showarrow: false,
+      xanchor: 'left',
+      yanchor: 'bottom',
+      yshift: 4,
+      font: { color: chartColors.spike },
+    }))
     const dayDuration = 24 * 60 * 60 * 1000
 
     for (let dayStart = chartRangeData.rangeStart; dayStart < chartRangeData.rangeEnd; dayStart += dayDuration) {
@@ -191,7 +227,8 @@ export function NoiseChart({
 
       return {
         ...maximumLayout,
-        shapes: [...dayNightShapes, ...(maximumLayout.shapes ?? [])],
+        shapes: [...dayNightShapes, ...healthThresholdShapes, ...(maximumLayout.shapes ?? [])],
+        annotations: [...healthThresholdAnnotations, ...(maximumLayout.annotations ?? [])],
       }
     }
 
