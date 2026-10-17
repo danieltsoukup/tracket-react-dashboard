@@ -10,6 +10,7 @@ import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
 import { fetchSensorAnnotations, type Annotation } from './annotations.api.ts'
 import { LatestNoiseReading } from './LatestNoiseReading.tsx'
+import { HourlyProfile } from './HourlyProfile.tsx'
 import { NoiseChart } from './NoiseChart.tsx'
 import { prepareNoiseChartData, type NoiseChartData } from './noiseChartData.ts'
 import { SensorLocationMap } from './SensorLocationMap.tsx'
@@ -22,6 +23,7 @@ function SensorPage() {
   const [measurements, setMeasurements] = useState<NoiseMeasurement[]>([])
   const [chartData, setChartData] = useState<NoiseChartData>(() => prepareNoiseChartData([]))
   const [hourlyMeasurements, setHourlyMeasurements] = useState<NoiseMeasurement[]>([])
+  const [profileMeasurements, setProfileMeasurements] = useState<NoiseMeasurement[]>([])
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [granularity, setGranularity] = useState<NoiseGranularity>('hourly')
   const [chartStart, setChartStart] = useState('')
@@ -94,6 +96,7 @@ function SensorPage() {
       setMeasurements([])
       setChartData(prepareNoiseChartData([]))
       setHourlyMeasurements([])
+      setProfileMeasurements([])
       setIsNoiseLoading(false)
       return
     }
@@ -110,6 +113,9 @@ function SensorPage() {
     const start = toSensorLocalTimestamp(chartStart, '00:00:00', location.latestTimestamp)
     const end = toSensorLocalTimestamp(chartEnd, '23:59:00', location.latestTimestamp)
     const cacheKey = `${parsedSensorId}:${location.latestTimestamp}:${granularity}:${start}:${end}`
+    const isDefaultHourlyRange = granularity === 'hourly' &&
+      chartStart === shiftSensorLocalDate(location.latestTimestamp, -7) &&
+      chartEnd === getSensorLocalDate(location.latestTimestamp)
     const cachedMeasurements = measurementsCache.current.get(cacheKey)
 
     if (cachedMeasurements) {
@@ -117,6 +123,9 @@ function SensorPage() {
       setChartData(prepareNoiseChartData(cachedMeasurements))
       if (granularity === 'hourly') {
         setHourlyMeasurements(cachedMeasurements)
+      }
+      if (isDefaultHourlyRange) {
+        setProfileMeasurements(cachedMeasurements)
       }
       setIsNoiseLoading(false)
       setNoiseError(null)
@@ -139,6 +148,9 @@ function SensorPage() {
           setChartData(prepareNoiseChartData(loadedMeasurements))
           if (granularity === 'hourly') {
             setHourlyMeasurements(loadedMeasurements)
+          }
+          if (isDefaultHourlyRange) {
+            setProfileMeasurements(loadedMeasurements)
           }
           setIsNoiseLoading(false)
         }
@@ -257,10 +269,13 @@ function SensorPage() {
           <>
             {noiseError && <p role="alert">{noiseError}</p>}
             <>
-              {measurements.length > 0 && (
+              {(measurements.length > 0 || profileMeasurements.length > 0) && (
                 <div className="sensor-insights">
                   <SensorPanel title="Latest hourly recording" icon="show_chart">
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
+                  </SensorPanel>
+                  <SensorPanel title="Hourly noise profile" icon="show_chart">
+                    <HourlyProfile measurements={profileMeasurements} />
                   </SensorPanel>
                   <SensorPanel title={location.label} icon="location_on">
                     <SensorLocationMap location={location} />

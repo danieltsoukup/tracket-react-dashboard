@@ -127,7 +127,7 @@ body {
 
 .sensor-insights {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
   margin: 12px 0 20px;
   align-items: stretch;
@@ -256,6 +256,22 @@ body {
   border-radius: 25px;
 }
 
+.hourly-profile-chart {
+  width: 100%;
+  height: 285px;
+  background: rgb(var(--rgb-page-surface));
+  border-radius: 25px;
+}
+
+.hourly-profile__empty {
+  display: grid;
+  min-height: 285px;
+  margin: 0;
+  color: rgb(var(--rgb-muted));
+  place-items: center;
+  text-align: center;
+}
+
 /* Noise chart and controls */
 .noise-chart {
   overflow: hidden;
@@ -263,6 +279,12 @@ body {
   min-height: 420px;
   background: rgb(var(--rgb-page-surface));
   border-radius: 25px;
+}
+
+@media (max-width: 960px) {
+  .sensor-insights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .noise-chart-tooltip {
