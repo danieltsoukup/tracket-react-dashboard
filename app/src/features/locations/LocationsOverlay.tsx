@@ -4,6 +4,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { getLocationIcon, type LocationHealth } from './locations.config.ts'
+import { dayNightIcons } from '../config.ts'
 
 type LocationCounts = {
   unhealthy: number
@@ -181,8 +182,8 @@ function NoiseInfoDialog({ isOpen, onClose }: NoiseInfoDialogProps) {
         Location markers turn red when their hourly mean exceeds the outdoor health thresholds set by the WHO.
       </p>
       <ul>
-        <li><strong>07:00-23:00:</strong> keep below 55 dB</li>
-        <li><strong>23:00-07:00:</strong> keep below 40 dB</li>
+        <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
+        <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
       </ul>
       <p>
         Use the status toggles to filter which locations are shown on the map, including combining multiple health states at once.

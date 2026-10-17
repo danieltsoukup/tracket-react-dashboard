@@ -14,3 +14,8 @@ export const chartColors = {
   spike: '#718078',
   nightzone: '#E3E8E4',
 }
+
+export const dayNightIcons = {
+  day: 'sunny',
+  night: 'bedtime',
+} as const

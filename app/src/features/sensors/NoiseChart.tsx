@@ -18,7 +18,7 @@ import {
   LOCATION_HEALTH_THRESHOLDS,
 } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
-import { chartColors } from '../config.ts'
+import { chartColors, dayNightIcons } from '../config.ts'
 import { getTimeOfDayIcon } from './chartTooltip.ts'
 import type { ChartTooltip } from './chartTooltip.ts'
 
@@ -160,11 +160,11 @@ export function NoiseChart({
     const healthThresholdLines = [
       {
         value: LOCATION_HEALTH_THRESHOLDS.nighttime,
-        icon: 'bedtime',
+        icon: dayNightIcons.night,
       },
       {
         value: LOCATION_HEALTH_THRESHOLDS.daytime,
-        icon: 'sunny',
+        icon: dayNightIcons.day,
       },
     ]
     const healthThresholdShapes: NonNullable<Plotly.Layout['shapes']> = healthThresholdLines.map(({ value }) => ({

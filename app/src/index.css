@@ -340,7 +340,9 @@ body {
   font-size: 0.7rem;
 }
 
-.noise-chart-tooltip__date .material-symbols-outlined {
+.noise-chart-tooltip__date .material-symbols-outlined,
+.location-tooltip__time-icon,
+.noise-info-modal li .material-symbols-outlined {
   font-size: 1rem;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
@@ -861,7 +863,18 @@ body {
 
 .noise-info-modal ul {
   margin: 0 0 16px;
-  padding-left: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.noise-info-modal li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.noise-info-modal li .material-symbols-outlined {
+  flex: 0 0 auto;
 }
 
 .noise-info-modal a {
@@ -1034,10 +1047,17 @@ body {
 }
 
 .location-tooltip__timestamp {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-top: 8px;
   color: rgb(var(--rgb-muted));
   font-size: 0.68rem;
   letter-spacing: 0.01em;
+}
+
+.location-tooltip__time-icon {
+  line-height: 1;
 }
 
 .marker-cluster.location-cluster--active {

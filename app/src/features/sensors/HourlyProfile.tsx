@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { prepareHourlyProfileData } from './hourlyProfileData.ts'
-import { chartColors } from '../config.ts'
+import { chartColors, dayNightIcons } from '../config.ts'
 import { getTimeOfDayIcon } from './chartTooltip.ts'
 import type { TimeOfDayIcon } from './chartTooltip.ts'
 import {
@@ -88,11 +88,11 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
     const healthThresholdLines = [
       {
         value: LOCATION_HEALTH_THRESHOLDS.nighttime,
-        icon: 'bedtime',
+        icon: dayNightIcons.night,
       },
       {
         value: LOCATION_HEALTH_THRESHOLDS.daytime,
-        icon: 'sunny',
+        icon: dayNightIcons.day,
       },
     ]
 
@@ -232,7 +232,7 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
           left,
           top: pointY - 12,
           hour: point.hour,
-          timeOfDayIcon: getTimeOfDayIcon(`2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`) ?? 'bedtime',
+          timeOfDayIcon: getTimeOfDayIcon(`2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`) ?? dayNightIcons.night,
           min: point.min,
           max: point.max,
           mean: point.mean,

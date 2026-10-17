@@ -25,6 +25,7 @@ import { fetchLocations } from './locations.api.ts'
 import { LocationsOverlay } from './LocationsOverlay.tsx'
 import type { Location } from './locations.types.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
+import { getTimeOfDayIcon } from '../sensors/chartTooltip.ts'
 
 type LocationMarker = L.CircleMarker & {
   locationActive: boolean
@@ -49,8 +50,12 @@ function getLocationInfo(location: Location) {
   const color = getLocationColor(location.active, location.hourEnd, location.hourMean)
   const meanNoise = location.hourMean.toFixed(1)
   const sensorIcon = getLocationIcon(health)
+  const timeOfDayIcon = getTimeOfDayIcon(location.hourEnd)
+  const timeOfDayIconMarkup = timeOfDayIcon
+    ? `<span class="material-symbols-outlined location-tooltip__time-icon" aria-hidden="true">${timeOfDayIcon}</span>`
+    : ''
 
-  return `<div class="location-tooltip__label"><span class="material-symbols-outlined" style="color: ${color}" aria-hidden="true">${sensorIcon}</span><span class="location-tooltip__title">${location.label}</span></div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.hourEnd)}</div>`
+  return `<div class="location-tooltip__label"><span class="material-symbols-outlined" style="color: ${color}" aria-hidden="true">${sensorIcon}</span><span class="location-tooltip__title">${location.label}</span></div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.hourEnd)}${timeOfDayIconMarkup}</div>`
 }
 
 function LocationsPage() {
