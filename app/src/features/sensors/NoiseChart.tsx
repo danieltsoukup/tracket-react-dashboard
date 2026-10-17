@@ -47,6 +47,38 @@ const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: 'short',
 })
 
+function getMaximumIndicatorLayout(maximum: number | null): Partial<Plotly.Layout> {
+  if (maximum === null) {
+    return { shapes: [], annotations: [] }
+  }
+
+  return {
+    shapes: [{
+      type: 'line',
+      xref: 'paper',
+      x0: 0,
+      x1: 1,
+      yref: 'y',
+      y0: maximum,
+      y1: maximum,
+      line: { color: chartColors.spike, width: 1, dash: 'dash' },
+    }],
+    annotations: [{
+      xref: 'paper',
+      x: 0,
+      yref: 'y',
+      y: maximum,
+      text: `Maximum measured ${maximum.toFixed(1)} dB`,
+      showarrow: false,
+      xanchor: 'left',
+      yanchor: 'bottom',
+      yshift: 4,
+      font: { color: chartColors.spike },
+      bgcolor: chartColors.background,
+    }],
+  }
+}
+
 export function NoiseChart({
   active,
   measurements,
@@ -112,6 +144,10 @@ export function NoiseChart({
 
     const lineWidths = granularity === 'hourly' ? { range: 1, mean: 3 } : { range: 0.5, mean: 1.5 }
     const traces: Plotly.Data[] = []
+    let displayedMaximum = measurements.reduce<number | null>(
+      (largest, measurement) => largest === null ? measurement.max : Math.max(largest, measurement.max),
+      null,
+    )
     chartData.rangeSegments.forEach((segment) => {
       traces.push(
         {
@@ -173,6 +209,7 @@ export function NoiseChart({
         range: [new Date(chartRangeData.rangeStart).toISOString(), new Date(chartRangeData.rangeEnd).toISOString()],
       },
       yaxis: { title: { text: 'Noise (dB)' }, gridcolor: chartColors.grid, zeroline: false },
+      ...getMaximumIndicatorLayout(displayedMaximum),
     }
 
     function showMeasurementTooltip(
@@ -301,6 +338,19 @@ export function NoiseChart({
 
         if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd) && rangeEnd > rangeStart) {
           setVisibleRange([rangeStart, rangeEnd])
+          const visibleMaximum = measurements.reduce<number | null>((largest, measurement) => {
+            const timestamp = Date.parse(measurement.timestamp)
+            if (!Number.isFinite(timestamp) || timestamp < rangeStart || timestamp > rangeEnd) {
+              return largest
+            }
+
+            return largest === null ? measurement.max : Math.max(largest, measurement.max)
+          }, null)
+
+          if (visibleMaximum !== displayedMaximum) {
+            displayedMaximum = visibleMaximum
+            void Plotly.relayout(plot, getMaximumIndicatorLayout(displayedMaximum))
+          }
         }
       })
     }
