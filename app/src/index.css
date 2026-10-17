@@ -133,6 +133,10 @@ body {
   align-items: stretch;
 }
 
+.sensor-insights .sensor-panel {
+  container-type: inline-size;
+}
+
 .sensor-panel {
   display: flex;
   flex-direction: column;
@@ -273,6 +277,28 @@ body {
   text-align: center;
 }
 
+.sensor-insights .sensor-panel__body {
+  --sensor-insight-card-height: clamp(180px, 75cqi, 285px);
+  min-height: var(--sensor-insight-card-height);
+}
+
+.sensor-insights .latest-noise-reading,
+.sensor-insights .sensor-location-map {
+  min-height: var(--sensor-insight-card-height);
+}
+
+.sensor-insights .sensor-location-map {
+  height: var(--sensor-insight-card-height);
+}
+
+.sensor-insights .hourly-profile-chart {
+  height: var(--sensor-insight-card-height);
+}
+
+.sensor-insights .hourly-profile__empty {
+  min-height: var(--sensor-insight-card-height);
+}
+
 /* Noise chart and controls */
 .noise-chart {
   overflow: hidden;
@@ -284,7 +310,7 @@ body {
 
 @media (max-width: 960px) {
   .sensor-insights {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
@@ -587,9 +613,6 @@ body {
     justify-content: space-between;
   }
 
-  .sensor-insights {
-    grid-template-columns: 1fr;
-  }
 }
 
 .location-map {
