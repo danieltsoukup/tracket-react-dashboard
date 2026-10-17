@@ -12,7 +12,6 @@ import type { AnnotationTimelineInterval } from './annotationTimelineData.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
 import { getLocationHealth } from '../locations/locations.config.ts'
-import type { LocationHealth } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 import { chartColors } from '../config.ts'
 import type { ChartTooltip } from './chartTooltip.ts'
@@ -48,6 +47,9 @@ const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
 })
 
 function getMaximumIndicatorLayout(maximum: number | null): Partial<Plotly.Layout> {
+  /*
+    * Generate layout configuration for indicating the maximum measured noise level on the chart.
+  */
   if (maximum === null) {
     return { shapes: [], annotations: [] }
   }

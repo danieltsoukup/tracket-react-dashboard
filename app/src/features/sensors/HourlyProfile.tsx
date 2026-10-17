@@ -114,6 +114,10 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
         yPixel: number | undefined,
         mouseEvent: MouseEvent | undefined,
       ) {
+        if (!chart) {
+          return
+        }
+
         let hour = pointNumber
 
         if (hour === undefined || !profile[hour]?.count) {
