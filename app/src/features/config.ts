@@ -12,4 +12,5 @@ export const chartColors = {
   background: '#F4F6F3',
   grid: '#E3E8E4',
   spike: '#718078',
+  nightzone: '#E3E8E4',
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { NoiseMeasurement } from './sensors.api.ts'
-import { prepareNoiseChartData } from './noiseChartData.ts'
+import { getMaximumNoiseLevelInRange, prepareNoiseChartData } from './noiseChartData.ts'
 
 function measurement(timestamp: string, value: number): NoiseMeasurement {
   return {
@@ -68,5 +68,38 @@ describe('prepareNoiseChartData', () => {
 
   it('handles an empty dataset', () => {
     expect(prepareNoiseChartData([])).toEqual({ points: [], rangeSegments: [] })
+  })
+})
+
+describe('getMaximumNoiseLevelInRange', () => {
+  it('uses plotted sensor-local timestamps when finding the visible maximum', () => {
+    const chartData = prepareNoiseChartData([
+      measurement('2026-09-13T22:50:00-04:00', 40),
+      measurement('2026-09-13T23:50:00-04:00', 80),
+    ])
+
+    expect(
+      getMaximumNoiseLevelInRange(
+        chartData.points,
+        Date.parse('2026-09-13T00:00:00Z'),
+        Date.parse('2026-09-14T00:00:00Z'),
+      ),
+    ).toBe(85)
+  })
+
+  it('includes a measurement at the visible range end and excludes later measurements', () => {
+    const points = prepareNoiseChartData([
+      measurement('2026-09-13T23:59:00Z', 40),
+      measurement('2026-09-14T00:00:00Z', 80),
+      measurement('2026-09-14T00:01:00Z', 100),
+    ]).points
+
+    expect(
+      getMaximumNoiseLevelInRange(
+        points,
+        Date.parse('2026-09-13T00:00:00Z'),
+        Date.parse('2026-09-14T00:00:00Z'),
+      ),
+    ).toBe(85)
   })
 })

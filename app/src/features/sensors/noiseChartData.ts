@@ -17,6 +17,32 @@ export type NoiseChartData = {
   rangeSegments: NoiseRangeSegment[]
 }
 
+export function getMaximumNoiseLevelInRange(
+  points: NoiseChartPoint[],
+  rangeStart: number,
+  rangeEnd: number,
+): number | null {
+  /*
+    * Returns the maximum noise level in the given range of timestamps.
+  */
+  if (!Number.isFinite(rangeStart) || !Number.isFinite(rangeEnd) || rangeEnd < rangeStart) {
+    return null
+  }
+
+  return points.reduce<number | null>((largest, point) => {
+    if (!point.measurement) {
+      return largest
+    }
+
+    const timestamp = Date.parse(point.timestamp)
+    if (!Number.isFinite(timestamp) || timestamp < rangeStart || timestamp > rangeEnd) {
+      return largest
+    }
+
+    return largest === null ? point.measurement.max : Math.max(largest, point.measurement.max)
+  }, null)
+}
+
 export function prepareNoiseChartData(measurements: NoiseMeasurement[]): NoiseChartData {
   const intervals = measurements
     .slice(1)

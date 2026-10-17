@@ -10,6 +10,7 @@ import {
 } from './annotationTimelineData.ts'
 import type { AnnotationTimelineInterval } from './annotationTimelineData.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
+import { getMaximumNoiseLevelInRange } from './noiseChartData.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
 import {
   getLocationHealth,
@@ -150,9 +151,10 @@ export function NoiseChart({
 
     const lineWidths = granularity === 'hourly' ? { range: 1, mean: 3 } : { range: 0.5, mean: 1.5 }
     const traces: Plotly.Data[] = []
-    let displayedMaximum = measurements.reduce<number | null>(
-      (largest, measurement) => largest === null ? measurement.max : Math.max(largest, measurement.max),
-      null,
+    let displayedMaximum = getMaximumNoiseLevelInRange(
+      chartData.points,
+      chartRangeData.rangeStart,
+      chartRangeData.rangeEnd,
     )
     const dayNightShapes: NonNullable<Plotly.Layout['shapes']> = []
     const healthThresholdLines = [
@@ -203,7 +205,7 @@ export function NoiseChart({
           yref: 'paper',
           y0: 0,
           y1: 1,
-          fillcolor: '#E9ECEA',
+          fillcolor: chartColors.nightzone,
           line: { width: 0 },
           layer: 'below',
         },
@@ -215,7 +217,7 @@ export function NoiseChart({
           yref: 'paper',
           y0: 0,
           y1: 1,
-          fillcolor: '#E9ECEA',
+          fillcolor: chartColors.nightzone,
           line: { width: 0 },
           layer: 'below',
         },
@@ -423,14 +425,7 @@ export function NoiseChart({
 
         if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd) && rangeEnd > rangeStart) {
           setVisibleRange([rangeStart, rangeEnd])
-          const visibleMaximum = measurements.reduce<number | null>((largest, measurement) => {
-            const timestamp = Date.parse(measurement.timestamp)
-            if (!Number.isFinite(timestamp) || timestamp < rangeStart || timestamp > rangeEnd) {
-              return largest
-            }
-
-            return largest === null ? measurement.max : Math.max(largest, measurement.max)
-          }, null)
+          const visibleMaximum = getMaximumNoiseLevelInRange(chartData.points, rangeStart, rangeEnd)
 
           if (visibleMaximum !== displayedMaximum) {
             displayedMaximum = visibleMaximum
