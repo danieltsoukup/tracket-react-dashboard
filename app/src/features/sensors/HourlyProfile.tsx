@@ -161,7 +161,7 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
           x: 0.15,
           yref: 'y' as const,
           y: value,
-          text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span> health limit`,
+          text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span>`,
           showarrow: false,
           xanchor: 'left' as const,
           yanchor: 'bottom' as const,

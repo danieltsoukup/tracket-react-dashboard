@@ -182,7 +182,7 @@ export function NoiseChart({
       x: 0,
       yref: 'y',
       y: value,
-      text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span> health limit`,
+      text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span>`,
       showarrow: false,
       xanchor: 'left',
       yanchor: 'bottom',
