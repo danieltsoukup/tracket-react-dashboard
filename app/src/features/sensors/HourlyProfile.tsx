@@ -3,7 +3,11 @@ import Plotly from 'plotly.js-dist'
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { prepareHourlyProfileData } from './hourlyProfileData.ts'
 import { chartColors } from '../config.ts'
-import { getLocationHealth } from '../locations/locations.config.ts'
+import {
+  getLocationHealth,
+  LOCATION_HEALTH_HOURS,
+  LOCATION_HEALTH_THRESHOLDS,
+} from '../locations/locations.config.ts'
 import type { LocationHealth } from '../locations/locations.config.ts'
 
 type HourlyProfileTooltip = {
@@ -37,14 +41,21 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
       return
     }
 
-    const hours = profile.map((point) => point.hour)
+    const loopedProfile = [...profile, { ...profile[0], hour: 24 }]
+    const hours = loopedProfile.map((point) => point.hour)
+    const minimumValue = Math.min(
+      30,
+      ...profile
+        .flatMap((point) => [point.min, point.max, point.mean])
+        .filter((value): value is number => value !== null),
+    )
     const traces: Plotly.Data[] = [
       {
         type: 'scatter',
         mode: 'lines',
         name: 'Minimum',
         x: hours,
-        y: profile.map((point) => point.min),
+        y: loopedProfile.map((point) => point.min),
         line: { color: chartColors.min, width: 1 },
         hoverinfo: 'none',
       },
@@ -53,7 +64,7 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
         mode: 'lines',
         name: 'Maximum',
         x: hours,
-        y: profile.map((point) => point.max),
+        y: loopedProfile.map((point) => point.max),
         line: { color: chartColors.max, width: 1 },
         fill: 'tonexty',
         fillcolor: chartColors.max,
@@ -65,24 +76,40 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
         mode: 'lines',
         name: 'Mean',
         x: hours,
-        y: profile.map((point) => point.mean),
+        y: loopedProfile.map((point) => point.mean),
         line: { color: chartColors.mean, width: 3 },
         hoverinfo: 'none',
       },
+    ]
+
+    const healthThresholdLines = [
+      {
+        value: LOCATION_HEALTH_THRESHOLDS.nighttime,
+        label: `Night threshold ${LOCATION_HEALTH_THRESHOLDS.nighttime} dB`,
+      },
+      {
+        value: LOCATION_HEALTH_THRESHOLDS.daytime,
+        label: `Day threshold ${LOCATION_HEALTH_THRESHOLDS.daytime} dB`,
+      },
+    ]
+
+    const nightZones = [
+      { start: 0, end: LOCATION_HEALTH_HOURS.daytimeStart },
+      { start: LOCATION_HEALTH_HOURS.daytimeEnd, end: 24 },
     ]
 
     const layout: Partial<Plotly.Layout> = {
       autosize: true,
       paper_bgcolor: chartColors.background,
       plot_bgcolor: chartColors.background,
-      margin: { t: 20, r: 16, b: 48, l: 48 },
+      margin: { t: 32, r: 16, b: 48, l: 48 },
       showlegend: false,
       xaxis: {
         title: { text: 'Hour of day' },
         tickmode: 'array',
-        tickvals: [0, 6, 12, 18, 23],
-        ticktext: ['00:00', '06:00', '12:00', '18:00', '23:00'],
-        range: [0, 23],
+        tickvals: [0, 6, 12, 18, 24],
+        ticktext: ['00:00', '06:00', '12:00', '18:00', '00:00'],
+        range: [0, 24],
         gridcolor: chartColors.grid,
         zeroline: false,
         fixedrange: true,
@@ -93,16 +120,78 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
         spikethickness: 1,
         spikedash: 'dot',
       },
-        yaxis: {
-          title: { text: 'Noise (dB)' },
-          gridcolor: chartColors.grid,
-          zeroline: false,
-          fixedrange: true,
+      yaxis: {
+        title: { text: 'Noise (dB)' },
+        range: [minimumValue, null],
+        autorange: 'max',
+        gridcolor: chartColors.grid,
+        zeroline: false,
+        fixedrange: true,
+      },
+      shapes: [
+        ...nightZones.map(({ start, end }) => ({
+          type: 'rect' as const,
+          xref: 'x' as const,
+          x0: start,
+          x1: end,
+          yref: 'paper' as const,
+          y0: 0,
+          y1: 1,
+          fillcolor: '#E9ECEA',
+          line: { width: 0 },
+          layer: 'below' as const,
+        })),
+        ...healthThresholdLines.map(({ value }) => ({
+          type: 'line' as const,
+          xref: 'x' as const,
+          x0: 0,
+          x1: 24,
+          yref: 'y' as const,
+          y0: value,
+          y1: value,
+          line: { color: chartColors.spike, width: 1, dash: 'dash' as const },
+        })),
+      ],
+      annotations: [
+        ...healthThresholdLines.map(({ value, label }) => ({
+          xref: 'x' as const,
+          x: 0.15,
+          yref: 'y' as const,
+          y: value,
+          text: label,
+          showarrow: false,
+          xanchor: 'left' as const,
+          yanchor: 'bottom' as const,
+          yshift: 4,
+          font: { color: chartColors.spike },
+        })),
+        {
+          xref: 'x',
+          x: 0,
+          yref: 'paper',
+          y: 1.0,
+          text: '☾',
+          showarrow: false,
+          xanchor: 'left',
+          yanchor: 'bottom',
+          font: { color: chartColors.spike, size: 16 },
         },
-        hovermode: 'x',
-        hoveranywhere: true,
-        clickanywhere: true,
-      }
+        {
+          xref: 'x',
+          x: LOCATION_HEALTH_HOURS.daytimeStart,
+          yref: 'paper',
+          y: 0.9,
+          text: '☀',
+          showarrow: false,
+          xanchor: 'left',
+          yanchor: 'bottom',
+          font: { color: chartColors.spike, size: 16 },
+        },
+      ],
+      hovermode: 'x',
+      hoveranywhere: true,
+      clickanywhere: true,
+    }
 
       const plot = chart as unknown as Plotly.PlotlyHTMLElement
       let disposed = false
@@ -118,7 +207,7 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
           return
         }
 
-        let hour = pointNumber
+        let hour = pointNumber === undefined ? undefined : pointNumber % profile.length
 
         if (hour === undefined || !profile[hour]?.count) {
           const targetHour = typeof xValue === 'number' ? xValue : Number(xValue)
@@ -126,13 +215,15 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
             return
           }
 
+          const normalizedTargetHour = ((targetHour % 24) + 24) % 24
           let closestDistance = Number.POSITIVE_INFINITY
           profile.forEach((point) => {
             if (point.count === 0) {
               return
             }
 
-            const distance = Math.abs(point.hour - targetHour)
+            const directDistance = Math.abs(point.hour - normalizedTargetHour)
+            const distance = Math.min(directDistance, 24 - directDistance)
             if (distance < closestDistance) {
               closestDistance = distance
               hour = point.hour
