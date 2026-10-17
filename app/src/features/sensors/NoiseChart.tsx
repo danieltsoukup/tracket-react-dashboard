@@ -251,7 +251,7 @@ export function NoiseChart({
             x: 1,
             yref: 'y' as const,
             y: value,
-            text: `${Math.round(percentage)}% above limit`,
+            text: `Average ${Math.round(percentage)}% above limit`,
             showarrow: false,
             xanchor: 'right' as const,
             yanchor: 'bottom' as const,
