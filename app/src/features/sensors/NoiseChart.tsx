@@ -14,6 +14,7 @@ import type { NoiseChartData } from './noiseChartData.ts'
 import { getLocationHealth } from '../locations/locations.config.ts'
 import type { LocationHealth } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
+import { chartColors } from '../config.ts'
 
 type NoiseChartProps = {
   active: boolean
@@ -29,14 +30,6 @@ type NoiseChartProps = {
   onStartChange: (value: string) => void
   onEndChange: (value: string) => void
   onGranularityChange: (granularity: NoiseGranularity) => void
-}
-
-const chartColors = {
-  min: '#FDCB80',
-  fill: '#FDCB80',
-  max: '#FDCB80',
-  mean: '#E25100',
-  background: '#F4F6F3',
 }
 
 type ChartTooltip = {
@@ -183,17 +176,17 @@ export function NoiseChart({
       showlegend: false,
       xaxis: {
         type: 'date',
-        gridcolor: '#E3E8E4',
+        gridcolor: chartColors.grid,
         showspikes: true,
         spikemode: 'across',
         spikesnap: 'data',
-        spikecolor: '#718078',
+        spikecolor: chartColors.spike,
         spikethickness: 1,
         spikedash: 'dot',
         zeroline: false,
         range: [new Date(chartRangeData.rangeStart).toISOString(), new Date(chartRangeData.rangeEnd).toISOString()],
       },
-      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#E3E8E4', zeroline: false },
+      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: chartColors.grid, zeroline: false },
     }
 
     function showMeasurementTooltip(

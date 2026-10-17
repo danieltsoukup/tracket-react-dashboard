@@ -2,15 +2,10 @@ import { useEffect, useMemo, useRef } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { prepareHourlyProfileData } from './hourlyProfileData.ts'
+import { chartColors } from '../config.ts'
 
 type HourlyProfileProps = {
   measurements: NoiseMeasurement[]
-}
-
-const chartColors = {
-  range: '#FDCB80',
-  mean: '#E25100',
-  background: '#F4F6F3',
 }
 
 export function HourlyProfile({ measurements }: HourlyProfileProps) {
@@ -33,7 +28,7 @@ export function HourlyProfile({ measurements }: HourlyProfileProps) {
         name: 'Minimum',
         x: hours,
         y: profile.map((point) => point.min),
-        line: { color: chartColors.range, width: 1 },
+        line: { color: chartColors.min, width: 1 },
         hoverinfo: 'none',
       },
       {
@@ -42,9 +37,9 @@ export function HourlyProfile({ measurements }: HourlyProfileProps) {
         name: 'Maximum',
         x: hours,
         y: profile.map((point) => point.max),
-        line: { color: chartColors.range, width: 1 },
+        line: { color: chartColors.max, width: 1 },
         fill: 'tonexty',
-        fillcolor: chartColors.range,
+        fillcolor: chartColors.max,
         opacity: 0.35,
         hoverinfo: 'none',
       },
@@ -71,10 +66,10 @@ export function HourlyProfile({ measurements }: HourlyProfileProps) {
         tickvals: [0, 6, 12, 18, 23],
         ticktext: ['00:00', '06:00', '12:00', '18:00', '23:00'],
         range: [0, 23],
-        gridcolor: '#E3E8E4',
+        gridcolor: chartColors.grid,
         zeroline: false,
       },
-      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: '#E3E8E4', zeroline: false },
+      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: chartColors.grid, zeroline: false },
     }
 
     void Plotly.newPlot(chart, traces, layout, {

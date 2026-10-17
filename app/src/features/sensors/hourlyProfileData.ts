@@ -1,3 +1,6 @@
+/*
+  * @description This file contains the function to prepare hourly profile data from noise measurements.
+  */
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { getSensorLocalHour } from '../../utils/sensorLocalTime.ts'
 
@@ -17,6 +20,10 @@ type HourlyTotals = {
 }
 
 export function prepareHourlyProfileData(measurements: NoiseMeasurement[]): HourlyProfilePoint[] {
+  /*
+    * Prepare hourly profile data from noise measurements.
+    * The function calculates the average min, max, and mean values for each hour of the day (0-23).
+  */
   const hourlyTotals: HourlyTotals[] = Array.from({ length: 24 }, () => ({
     min: 0,
     max: 0,
