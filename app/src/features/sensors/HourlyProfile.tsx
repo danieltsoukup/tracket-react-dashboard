@@ -11,6 +11,7 @@ import {
   LOCATION_HEALTH_THRESHOLDS,
 } from '../locations/locations.config.ts'
 import type { LocationHealth } from '../locations/locations.config.ts'
+import { getSensorLocalDate } from '../../utils/sensorLocalTime.ts'
 
 type HourlyProfileTooltip = {
   left: number
@@ -30,12 +31,58 @@ type HourlyProfileProps = {
   measurements: NoiseMeasurement[]
 }
 
+const profileDateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+})
+
+const profileYearFormatter = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  timeZone: 'UTC',
+})
+
+function formatProfileDateRange(measurements: NoiseMeasurement[]) {
+  const dates = measurements
+    .map((measurement) => getSensorLocalDate(measurement.timestamp))
+    .filter(Boolean)
+    .sort()
+  const startDate = dates[0]
+  const endDate = dates.at(-1)
+
+  if (!startDate || !endDate) {
+    return ''
+  }
+
+  const start = new Date(`${startDate}T00:00:00Z`)
+  const end = new Date(`${endDate}T00:00:00Z`)
+  const startLabel = profileDateFormatter.format(start)
+  const endLabel = profileDateFormatter.format(end)
+  const startYear = profileYearFormatter.format(start)
+  const endYear = profileYearFormatter.format(end)
+
+  if (startDate === endDate) {
+    return `${startLabel}, ${startYear}`
+  }
+
+  if (start.getUTCFullYear() !== end.getUTCFullYear()) {
+    return `${startLabel}, ${startYear}-${endLabel}, ${endYear}`
+  }
+
+  if (start.getUTCMonth() !== end.getUTCMonth()) {
+    return `${startLabel}-${endLabel}, ${endYear}`
+  }
+
+  return `${startLabel}-${end.getUTCDate()}, ${endYear}`
+}
+
 export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
   const chartRef = useRef<HTMLDivElement | null>(null)
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const [tooltip, setTooltip] = useState<HourlyProfileTooltip | null>(null)
   const profile = useMemo(() => prepareHourlyProfileData(measurements), [measurements])
   const hasProfileData = profile.some((point) => point.count > 0)
+  const profileDateRange = formatProfileDateRange(measurements)
 
   useEffect(() => {
     const chart = chartRef.current
@@ -108,7 +155,16 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
       margin: { t: 32, r: 16, b: 48, l: 48 },
       showlegend: false,
       xaxis: {
-        title: { text: 'Hour of day' },
+        title: {
+          text: profileDateRange,
+          standoff: 10,
+          font: {
+            family: 'Inter, sans-serif',
+            size: 12,
+            color: 'rgb(113, 128, 120)',
+            weight: 600,
+          },
+        },
         tickmode: 'array',
         tickvals: [0, 6, 12, 18, 24],
         ticktext: ['00:00', '06:00', '12:00', '18:00', '00:00'],

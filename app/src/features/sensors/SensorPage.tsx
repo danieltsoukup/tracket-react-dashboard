@@ -271,10 +271,10 @@ function SensorPage() {
             <>
               {(measurements.length > 0 || profileMeasurements.length > 0) && (
                 <div className="sensor-insights">
-                  <SensorPanel title="Latest hourly recording" icon="show_chart">
+                  <SensorPanel title="Last hourly recording" icon="show_chart">
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
-                  <SensorPanel title="Last week daily average" icon="show_chart">
+                  <SensorPanel title="Last week hourly average" icon="show_chart">
                     <HourlyProfile active={location.active} measurements={profileMeasurements} />
                   </SensorPanel>
                   <SensorPanel title={location.label} icon="location_on">
