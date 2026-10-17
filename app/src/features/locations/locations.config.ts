@@ -68,6 +68,17 @@ export const LOCATION_HEALTH_HOURS = {
   daytimeEnd: 23,
 }
 
+export function getLocationHealthPeriod(hourEnd: string): 'daytime' | 'nighttime' {
+  const hour = getSensorLocalHour(hourEnd)
+
+  return hour !== null && hour >= LOCATION_HEALTH_HOURS.daytimeStart && hour < LOCATION_HEALTH_HOURS.daytimeEnd
+    ? 'daytime'
+    : 'nighttime'
+}
+
+export function getLocationHealthThreshold(hourEnd: string): number {
+  return LOCATION_HEALTH_THRESHOLDS[getLocationHealthPeriod(hourEnd)]
+}
 
 export function getLocationHealth(active: boolean, hourEnd: string, hourMean: number): LocationHealth {
   /**
@@ -80,10 +91,7 @@ export function getLocationHealth(active: boolean, hourEnd: string, hourMean: nu
     return 'inactive'
   }
 
-  const hour = getSensorLocalHour(hourEnd)
-  const threshold = hour !== null && hour >= LOCATION_HEALTH_HOURS.daytimeStart && hour < LOCATION_HEALTH_HOURS.daytimeEnd ? LOCATION_HEALTH_THRESHOLDS.daytime : LOCATION_HEALTH_THRESHOLDS.nighttime
-
-  return hourMean > threshold ? 'unhealthy' : 'active'
+  return hourMean > getLocationHealthThreshold(hourEnd) ? 'unhealthy' : 'active'
 }
 
 export function getLocationColor(active: boolean, hourEnd: string, hourMean: number) {

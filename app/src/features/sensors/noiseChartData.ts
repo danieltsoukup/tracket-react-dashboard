@@ -1,5 +1,6 @@
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { toSensorLocalPlotTimestamp } from '../../utils/sensorLocalTime.ts'
+import { getLocationHealthPeriod, getLocationHealthThreshold } from '../locations/locations.config.ts'
 
 export type NoiseChartPoint = {
   timestamp: string
@@ -41,6 +42,50 @@ export function getMaximumNoiseLevelInRange(
 
     return largest === null ? point.measurement.max : Math.max(largest, point.measurement.max)
   }, null)
+}
+
+export type MeanAboveHealthLimitPercentages = {
+  daytime: number | null
+  nighttime: number | null
+}
+
+export function getMeanAboveHealthLimitPercentagesInRange(
+  points: NoiseChartPoint[],
+  rangeStart: number,
+  rangeEnd: number,
+): MeanAboveHealthLimitPercentages {
+  if (!Number.isFinite(rangeStart) || !Number.isFinite(rangeEnd) || rangeEnd < rangeStart) {
+    return { daytime: null, nighttime: null }
+  }
+
+  const measurementCounts = { daytime: 0, nighttime: 0 }
+  const aboveLimitCounts = { daytime: 0, nighttime: 0 }
+
+  points.forEach((point) => {
+    if (!point.measurement) {
+      return
+    }
+
+    const timestamp = Date.parse(point.timestamp)
+    if (!Number.isFinite(timestamp) || timestamp < rangeStart || timestamp > rangeEnd) {
+      return
+    }
+
+    const period = getLocationHealthPeriod(point.measurement.timestamp)
+    measurementCounts[period] += 1
+    if (point.measurement.mean > getLocationHealthThreshold(point.measurement.timestamp)) {
+      aboveLimitCounts[period] += 1
+    }
+  })
+
+  return {
+    daytime: measurementCounts.daytime === 0
+      ? null
+      : (aboveLimitCounts.daytime / measurementCounts.daytime) * 100,
+    nighttime: measurementCounts.nighttime === 0
+      ? null
+      : (aboveLimitCounts.nighttime / measurementCounts.nighttime) * 100,
+  }
 }
 
 export function prepareNoiseChartData(measurements: NoiseMeasurement[]): NoiseChartData {

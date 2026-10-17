@@ -10,7 +10,11 @@ import {
 } from './annotationTimelineData.ts'
 import type { AnnotationTimelineInterval } from './annotationTimelineData.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
-import { getMaximumNoiseLevelInRange } from './noiseChartData.ts'
+import {
+  getMaximumNoiseLevelInRange,
+  getMeanAboveHealthLimitPercentagesInRange,
+} from './noiseChartData.ts'
+import type { MeanAboveHealthLimitPercentages } from './noiseChartData.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
 import {
   getLocationHealth,
@@ -82,6 +86,9 @@ function getMaximumIndicatorLayout(maximum: number | null): Partial<Plotly.Layou
       yanchor: 'bottom',
       yshift: 4,
       font: { ...chartFont, color: chartColors.spike },
+      bgcolor: chartColors.background,
+      opacity: 0.8,
+      borderpad: 2,
     }],
   }
 }
@@ -156,13 +163,20 @@ export function NoiseChart({
       chartRangeData.rangeStart,
       chartRangeData.rangeEnd,
     )
+    let displayedAboveLimitPercentages = getMeanAboveHealthLimitPercentagesInRange(
+      chartData.points,
+      chartRangeData.rangeStart,
+      chartRangeData.rangeEnd,
+    )
     const dayNightShapes: NonNullable<Plotly.Layout['shapes']> = []
     const healthThresholdLines = [
       {
+        period: 'nighttime' as const,
         value: LOCATION_HEALTH_THRESHOLDS.nighttime,
         icon: dayNightIcons.night,
       },
       {
+        period: 'daytime' as const,
         value: LOCATION_HEALTH_THRESHOLDS.daytime,
         icon: dayNightIcons.day,
       },
@@ -224,13 +238,36 @@ export function NoiseChart({
       )
     }
 
-    function getChartIndicatorLayout(maximum: number | null): Partial<Plotly.Layout> {
+    function getChartIndicatorLayout(
+      maximum: number | null,
+      aboveLimitPercentages: MeanAboveHealthLimitPercentages,
+    ): Partial<Plotly.Layout> {
       const maximumLayout = getMaximumIndicatorLayout(maximum)
+      const rateAnnotations: NonNullable<Plotly.Layout['annotations']> = healthThresholdLines.flatMap(
+        ({ period, value }) => {
+          const percentage = aboveLimitPercentages[period]
+          return percentage === null ? [] : [{
+            xref: 'paper' as const,
+            x: 1,
+            yref: 'y' as const,
+            y: value,
+            text: `${Math.round(percentage)}% above limit`,
+            showarrow: false,
+            xanchor: 'right' as const,
+            yanchor: 'bottom' as const,
+            yshift: 4,
+            font: { ...chartFont, color: chartColors.spike },
+            bgcolor: chartColors.background,
+            opacity: 0.8,
+            borderpad: 2,
+          }]
+        },
+      )
 
       return {
         ...maximumLayout,
         shapes: [...dayNightShapes, ...healthThresholdShapes, ...(maximumLayout.shapes ?? [])],
-        annotations: [...healthThresholdAnnotations, ...(maximumLayout.annotations ?? [])],
+        annotations: [...healthThresholdAnnotations, ...rateAnnotations, ...(maximumLayout.annotations ?? [])],
       }
     }
 
@@ -273,7 +310,7 @@ export function NoiseChart({
       hoverinfo: 'none',
     })
 
-    const chartIndicatorLayout = getChartIndicatorLayout(displayedMaximum)
+    const chartIndicatorLayout = getChartIndicatorLayout(displayedMaximum, displayedAboveLimitPercentages)
     const layout: Partial<Plotly.Layout> = {
       autosize: true,
       paper_bgcolor: chartColors.background,
@@ -433,10 +470,20 @@ export function NoiseChart({
         if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd) && rangeEnd > rangeStart) {
           setVisibleRange([rangeStart, rangeEnd])
           const visibleMaximum = getMaximumNoiseLevelInRange(chartData.points, rangeStart, rangeEnd)
+          const visibleAboveLimitPercentages = getMeanAboveHealthLimitPercentagesInRange(
+            chartData.points,
+            rangeStart,
+            rangeEnd,
+          )
 
-          if (visibleMaximum !== displayedMaximum) {
+          if (
+            visibleMaximum !== displayedMaximum ||
+            visibleAboveLimitPercentages.daytime !== displayedAboveLimitPercentages.daytime ||
+            visibleAboveLimitPercentages.nighttime !== displayedAboveLimitPercentages.nighttime
+          ) {
             displayedMaximum = visibleMaximum
-            void Plotly.relayout(plot, getChartIndicatorLayout(displayedMaximum))
+            displayedAboveLimitPercentages = visibleAboveLimitPercentages
+            void Plotly.relayout(plot, getChartIndicatorLayout(displayedMaximum, displayedAboveLimitPercentages))
           }
         }
       })
