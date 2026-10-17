@@ -4,10 +4,21 @@
  */
 import type { Location } from './locations.types.ts'
 import { API_BASE_URL } from '../config.ts'
+import { correctLocationTimestamp } from '../../utils/locationTimezoneCorrection.ts'
 
 export const LOCATIONS_API_URL = `${API_BASE_URL}/locations`
 
 export type { Location } from './locations.types.ts'
+
+function correctLocationTimestamps(location: Location): Location {
+  return {
+    ...location,
+    lastChecked: correctLocationTimestamp(location.id, location.lastChecked),
+    latestTimestamp: correctLocationTimestamp(location.id, location.latestTimestamp),
+    hourStart: correctLocationTimestamp(location.id, location.hourStart),
+    hourEnd: correctLocationTimestamp(location.id, location.hourEnd),
+  }
+}
 
 type LocationsResponse = {
   /**
@@ -72,7 +83,8 @@ export async function fetchLocations(signal?: AbortSignal): Promise<Location[]> 
     throw new Error('The locations API returned an unexpected response.')
   }
 
-  return data.locations
+  // TEMPORARY: remove when the API returns each location's local timestamps.
+  return data.locations.map(correctLocationTimestamps)
 }
 
 export async function fetchLocation(locationId: number, signal?: AbortSignal): Promise<Location> {
@@ -89,5 +101,6 @@ export async function fetchLocation(locationId: number, signal?: AbortSignal): P
   }
 
   console.log(`Fetched location ${locationId}: ${data.locations[0].label}`)
-  return data.locations[0]
+  // TEMPORARY: remove when the API returns each location's local timestamps.
+  return correctLocationTimestamps(data.locations[0])
 }

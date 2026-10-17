@@ -34,6 +34,17 @@ describe('fetchSensorNoise', () => {
     )
   })
 
+  it('corrects timestamps for configured locations when loading chart data', async () => {
+    const measurement = { ...validMeasurement, timestamp: '2026-07-15T12:00:00Z' }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ measurements: [measurement] }), { status: 200 }),
+    )
+
+    await expect(fetchSensorNoise(3270474)).resolves.toEqual([
+      { ...measurement, timestamp: '2026-07-15T17:00:00+01:00' },
+    ])
+  })
+
   it('uses the latest timestamp for a four-day range and fetches every page', async () => {
     const fullPage = Array.from({ length: 1000 }, () => validMeasurement)
     const fetchMock = vi

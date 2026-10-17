@@ -3,6 +3,7 @@
  * @description Utilities for fetching sensor measurements from the API.
  */
 import { shiftSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
+import { correctLocationTimestamp } from '../../utils/locationTimezoneCorrection.ts'
 import { API_BASE_URL } from '../config.ts'
 
 export const SENSOR_NOISE_API_URL = `${API_BASE_URL}/locations`
@@ -85,13 +86,19 @@ export async function fetchSensorNoise(sensorId: number, options: NoiseQueryOpti
       throw new Error('The noise API returned an unexpected response.')
     }
 
-    if (data.measurements.length < MEASUREMENTS_PAGE_SIZE) {
-      measurements.push(...data.measurements)
+    // TEMPORARY: remove when the API returns each location's local timestamps.
+    const correctedMeasurements = data.measurements.map((measurement) => ({
+      ...measurement,
+      timestamp: correctLocationTimestamp(sensorId, measurement.timestamp),
+    }))
+
+    if (correctedMeasurements.length < MEASUREMENTS_PAGE_SIZE) {
+      measurements.push(...correctedMeasurements)
       console.log(`${measurements.length} measeurements fetched for sensor ${sensorId}.`)
       return measurements
     }
 
-    measurements.push(...data.measurements)
+    measurements.push(...correctedMeasurements)
     page += 1
   }
 }
