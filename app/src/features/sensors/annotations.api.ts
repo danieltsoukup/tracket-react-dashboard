@@ -1,4 +1,9 @@
-export const ANNOTATIONS_API_URL = 'https://api.tracket.info/v1/annotations'
+/*
+  * Annotations API module for fetching and validating annotation data.
+*/
+import { API_BASE_URL } from '../config.ts'
+
+export const ANNOTATIONS_API_URL = `${API_BASE_URL}/annotations`
 
 export type Annotation = {
   id: number
@@ -78,12 +83,18 @@ export async function fetchSensorAnnotations(
   endTime: string,
   signal?: AbortSignal,
 ): Promise<Annotation[]> {
+  /*
+    * Fetch annotations for a specific sensor location within a given time range.
+    * The startTime and endTime should be in ISO 8601 format (e.g., YYYY-MM-DDTHH:mm:ssZ).
+  */
   const query = new URLSearchParams({
     location: String(locationId),
     startTime,
     endTime,
   })
 
+  // TODO: remove before prod release
+  // MOCK DATA FOR SEPTEMBER 2026
   const rangeStart = Date.parse(startTime)
   const rangeEnd = Date.parse(endTime)
   const septemberStart = Date.parse('2026-09-01T00:00:00Z')
@@ -100,6 +111,7 @@ export async function fetchSensorAnnotations(
       (annotation) => Date.parse(annotation.startTime) < rangeEnd && Date.parse(annotation.endTime) > rangeStart,
     )
   }
+  // END OF MOCK DATA
 
   const response = await fetch(`${ANNOTATIONS_API_URL}?${query}`, { signal })
 

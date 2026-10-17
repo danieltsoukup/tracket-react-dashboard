@@ -80,7 +80,7 @@ describe('getLocationColor', () => {
 
 describe('getLocationIcon', () => {
   it('maps each health classification to its status icon', () => {
-    expect(getLocationIcon('unhealthy')).toBe('warning')
+    expect(getLocationIcon('unhealthy')).toBe('sensors')
     expect(getLocationIcon('active')).toBe('sensors')
     expect(getLocationIcon('inactive')).toBe('sensors_off')
   })

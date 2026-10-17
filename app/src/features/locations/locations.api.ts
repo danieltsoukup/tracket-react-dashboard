@@ -3,8 +3,9 @@
  * @description This file contains the functions and types for fetching sensor locations from the API.
  */
 import type { Location } from './locations.types.ts'
+import { API_BASE_URL } from '../config.ts'
 
-export const LOCATIONS_API_URL = 'https://api.tracket.info/v1/locations'
+export const LOCATIONS_API_URL = `${API_BASE_URL}/locations`
 
 export type { Location } from './locations.types.ts'
 

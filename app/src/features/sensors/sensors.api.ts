@@ -3,8 +3,9 @@
  * @description Utilities for fetching sensor measurements from the API.
  */
 import { shiftSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
+import { API_BASE_URL } from '../config.ts'
 
-export const SENSOR_NOISE_API_URL = 'https://api.tracket.info/v1/locations'
+export const SENSOR_NOISE_API_URL = `${API_BASE_URL}/locations`
 const MEASUREMENTS_PAGE_SIZE = 1000
 
 export type NoiseGranularity = 'raw' | 'hourly' | 'life-time'
