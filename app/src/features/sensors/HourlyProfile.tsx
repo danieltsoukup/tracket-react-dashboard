@@ -3,6 +3,8 @@ import Plotly from 'plotly.js-dist'
 import type { NoiseMeasurement } from './sensors.api.ts'
 import { prepareHourlyProfileData } from './hourlyProfileData.ts'
 import { chartColors } from '../config.ts'
+import { getTimeOfDayIcon } from './chartTooltip.ts'
+import type { TimeOfDayIcon } from './chartTooltip.ts'
 import {
   getLocationHealth,
   LOCATION_HEALTH_HOURS,
@@ -14,6 +16,7 @@ type HourlyProfileTooltip = {
   left: number
   top: number
   hour: number
+  timeOfDayIcon: TimeOfDayIcon
   min: number
   max: number
   mean: number
@@ -85,11 +88,11 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
     const healthThresholdLines = [
       {
         value: LOCATION_HEALTH_THRESHOLDS.nighttime,
-        label: `Night threshold ${LOCATION_HEALTH_THRESHOLDS.nighttime} dB`,
+        icon: 'bedtime',
       },
       {
         value: LOCATION_HEALTH_THRESHOLDS.daytime,
-        label: `Day threshold ${LOCATION_HEALTH_THRESHOLDS.daytime} dB`,
+        icon: 'sunny',
       },
     ]
 
@@ -153,40 +156,18 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
         })),
       ],
       annotations: [
-        ...healthThresholdLines.map(({ value, label }) => ({
+        ...healthThresholdLines.map(({ value, icon }) => ({
           xref: 'x' as const,
           x: 0.15,
           yref: 'y' as const,
           y: value,
-          text: label,
+          text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span> health limit`,
           showarrow: false,
           xanchor: 'left' as const,
           yanchor: 'bottom' as const,
           yshift: 4,
           font: { color: chartColors.spike },
         })),
-        {
-          xref: 'x',
-          x: 0,
-          yref: 'paper',
-          y: 0.85,
-          text: 'bedtime',
-          showarrow: false,
-          xanchor: 'left',
-          yanchor: 'bottom',
-          font: { color: chartColors.spike, size: 18, family: 'Material Symbols Outlined' },
-        },
-        {
-          xref: 'x',
-          x: LOCATION_HEALTH_HOURS.daytimeStart,
-          yref: 'paper',
-          y: 0.85,
-          text: 'sunny',
-          showarrow: false,
-          xanchor: 'left',
-          yanchor: 'bottom',
-          font: { color: chartColors.spike, size: 18, family: 'Material Symbols Outlined' },
-        },
       ],
       hovermode: 'x',
       hoveranywhere: true,
@@ -251,6 +232,7 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
           left,
           top: pointY - 12,
           hour: point.hour,
+          timeOfDayIcon: getTimeOfDayIcon(`2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`) ?? 'bedtime',
           min: point.min,
           max: point.max,
           mean: point.mean,
@@ -307,7 +289,10 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
           style={{ left: tooltip.left, top: tooltip.top }}
           role="status"
         >
-          <div className="noise-chart-tooltip__date">{`${String(tooltip.hour).padStart(2, '0')}:00–${String((tooltip.hour + 1) % 24).padStart(2, '0')}:00`}</div>
+          <div className="noise-chart-tooltip__date">
+            {`${String(tooltip.hour).padStart(2, '0')}:00–${String((tooltip.hour + 1) % 24).padStart(2, '0')}:00`}
+            <span className="material-symbols-outlined" aria-hidden="true">{tooltip.timeOfDayIcon}</span>
+          </div>
           {([
             ['Max', tooltip.max, tooltip.maxHealth],
             ['Mean', tooltip.mean, tooltip.meanHealth],

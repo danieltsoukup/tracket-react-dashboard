@@ -11,9 +11,10 @@ import {
 import type { AnnotationTimelineInterval } from './annotationTimelineData.ts'
 import { getNoiseDownloadFilename, measurementsToCsv } from './noiseDownload.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
-import { getLocationHealth } from '../locations/locations.config.ts'
+import { getLocationHealth, LOCATION_HEALTH_HOURS } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 import { chartColors } from '../config.ts'
+import { getTimeOfDayIcon } from './chartTooltip.ts'
 import type { ChartTooltip } from './chartTooltip.ts'
 
 type NoiseChartProps = {
@@ -76,7 +77,6 @@ function getMaximumIndicatorLayout(maximum: number | null): Partial<Plotly.Layou
       yanchor: 'bottom',
       yshift: 4,
       font: { color: chartColors.spike },
-      bgcolor: chartColors.background,
     }],
   }
 }
@@ -150,6 +150,51 @@ export function NoiseChart({
       (largest, measurement) => largest === null ? measurement.max : Math.max(largest, measurement.max),
       null,
     )
+    const dayNightShapes: NonNullable<Plotly.Layout['shapes']> = []
+    const dayDuration = 24 * 60 * 60 * 1000
+
+    for (let dayStart = chartRangeData.rangeStart; dayStart < chartRangeData.rangeEnd; dayStart += dayDuration) {
+      const sunrise = new Date(dayStart + LOCATION_HEALTH_HOURS.daytimeStart * 60 * 60 * 1000).toISOString()
+      const sunset = new Date(dayStart + LOCATION_HEALTH_HOURS.daytimeEnd * 60 * 60 * 1000).toISOString()
+      const nextMidnight = new Date(dayStart + dayDuration).toISOString()
+
+      dayNightShapes.push(
+        {
+          type: 'rect',
+          xref: 'x',
+          x0: new Date(dayStart).toISOString(),
+          x1: sunrise,
+          yref: 'paper',
+          y0: 0,
+          y1: 1,
+          fillcolor: '#E9ECEA',
+          line: { width: 0 },
+          layer: 'below',
+        },
+        {
+          type: 'rect',
+          xref: 'x',
+          x0: sunset,
+          x1: nextMidnight,
+          yref: 'paper',
+          y0: 0,
+          y1: 1,
+          fillcolor: '#E9ECEA',
+          line: { width: 0 },
+          layer: 'below',
+        },
+      )
+    }
+
+    function getChartIndicatorLayout(maximum: number | null): Partial<Plotly.Layout> {
+      const maximumLayout = getMaximumIndicatorLayout(maximum)
+
+      return {
+        ...maximumLayout,
+        shapes: [...dayNightShapes, ...(maximumLayout.shapes ?? [])],
+      }
+    }
+
     chartData.rangeSegments.forEach((segment) => {
       traces.push(
         {
@@ -189,11 +234,12 @@ export function NoiseChart({
       hoverinfo: 'none',
     })
 
+    const chartIndicatorLayout = getChartIndicatorLayout(displayedMaximum)
     const layout: Partial<Plotly.Layout> = {
       autosize: true,
       paper_bgcolor: chartColors.background,
       plot_bgcolor: chartColors.background,
-      margin: { t: 24, r: 24, b: 56, l: 56 },
+      margin: { t: 48, r: 24, b: 56, l: 56 },
       hovermode: 'x',
       hoveranywhere: true,
       clickanywhere: true,
@@ -211,7 +257,7 @@ export function NoiseChart({
         range: [new Date(chartRangeData.rangeStart).toISOString(), new Date(chartRangeData.rangeEnd).toISOString()],
       },
       yaxis: { title: { text: 'Noise (dB)' }, gridcolor: chartColors.grid, zeroline: false },
-      ...getMaximumIndicatorLayout(displayedMaximum),
+      ...chartIndicatorLayout,
     }
 
     function showMeasurementTooltip(
@@ -237,7 +283,6 @@ export function NoiseChart({
           if (!candidate.measurement) {
             return
           }
-
           const distance = Math.abs(Date.parse(candidate.timestamp) - targetTimestamp)
           if (distance < closestDistance) {
             closestDistance = distance
@@ -272,6 +317,7 @@ export function NoiseChart({
         left,
         top: pointY - 12,
         timestamp: formatSensorTimestamp(measurement.timestamp, tooltipDateFormatter),
+        timeOfDayIcon: getTimeOfDayIcon(measurement.timestamp),
         measurement: {
           min: measurement.min,
           minHealth: getLocationHealth(active, measurement.timestamp, measurement.min),
@@ -351,7 +397,7 @@ export function NoiseChart({
 
           if (visibleMaximum !== displayedMaximum) {
             displayedMaximum = visibleMaximum
-            void Plotly.relayout(plot, getMaximumIndicatorLayout(displayedMaximum))
+            void Plotly.relayout(plot, getChartIndicatorLayout(displayedMaximum))
           }
         }
       })
@@ -412,6 +458,7 @@ export function NoiseChart({
       left,
       top: chart.offsetHeight + 10,
       timestamp: formatSensorTimestamp(new Date(fraction).toISOString(), tooltipDateFormatter),
+      timeOfDayIcon: getTimeOfDayIcon(new Date(fraction).toISOString()),
       notes,
     })
   }
@@ -529,7 +576,14 @@ export function NoiseChart({
             style={{ left: tooltip.left, top: tooltip.top }}
             role="status"
           >
-            <div className="noise-chart-tooltip__date">{tooltip.timestamp}</div>
+            <div className="noise-chart-tooltip__date">
+              {tooltip.timestamp}
+              {tooltip.timeOfDayIcon && (
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  {tooltip.timeOfDayIcon}
+                </span>
+              )}
+            </div>
             {tooltip.measurement && (
               <>
                 <div className="noise-chart-tooltip__value">
