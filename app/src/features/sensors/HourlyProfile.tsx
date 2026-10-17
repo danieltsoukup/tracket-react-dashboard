@@ -68,8 +68,14 @@ export function HourlyProfile({ measurements }: HourlyProfileProps) {
         range: [0, 23],
         gridcolor: chartColors.grid,
         zeroline: false,
+        fixedrange: true,
       },
-      yaxis: { title: { text: 'Noise (dB)' }, gridcolor: chartColors.grid, zeroline: false },
+      yaxis: { 
+        title: { text: 'Noise (dB)' },
+        gridcolor: chartColors.grid,
+        zeroline: false,
+        fixedrange: true,
+      },
     }
 
     void Plotly.newPlot(chart, traces, layout, {
