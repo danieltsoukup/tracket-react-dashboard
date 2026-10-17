@@ -58,6 +58,17 @@ export function isLocationActive(latestTimestamp: string, now = Date.now()): boo
   return Number.isFinite(timestamp) && timestamp <= now && now - timestamp <= ACTIVE_WINDOW_MS
 }
 
+export const LOCATION_HEALTH_THRESHOLDS = {
+  daytime: 55,
+  nighttime: 40,
+}
+
+export const LOCATION_HEALTH_HOURS = {
+  daytimeStart: 7,
+  daytimeEnd: 23,
+}
+
+
 export function getLocationHealth(active: boolean, hourEnd: string, hourMean: number): LocationHealth {
   /**
    * Classify a location based on its active status and noise level.
@@ -70,7 +81,7 @@ export function getLocationHealth(active: boolean, hourEnd: string, hourMean: nu
   }
 
   const hour = getSensorLocalHour(hourEnd)
-  const threshold = hour !== null && hour >= 7 && hour < 23 ? 55 : 40
+  const threshold = hour !== null && hour >= LOCATION_HEALTH_HOURS.daytimeStart && hour < LOCATION_HEALTH_HOURS.daytimeEnd ? LOCATION_HEALTH_THRESHOLDS.daytime : LOCATION_HEALTH_THRESHOLDS.nighttime
 
   return hourMean > threshold ? 'unhealthy' : 'active'
 }
