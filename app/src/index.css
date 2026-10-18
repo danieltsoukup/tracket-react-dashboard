@@ -820,6 +820,10 @@ body {
   cursor: pointer;
 }
 
+.sensor-panel__info-button {
+  color: rgb(var(--rgb-muted));
+}
+
 .map-status__layer-button:hover,
 .map-status__info-button:hover,
 .sensor-panel__info-button:hover,
