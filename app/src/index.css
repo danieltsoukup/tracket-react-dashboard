@@ -147,11 +147,20 @@ body {
   border-radius: 25px;
 }
 
+.sensor-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+}
+
 .sensor-panel__title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 14px;
+  min-width: 0;
+  margin: 0;
   color: rgb(var(--rgb-muted));
   font-size: 1rem;
   font-weight: 800;
@@ -797,6 +806,7 @@ body {
 
 .map-status__layer-button,
 .map-status__info-button,
+.sensor-panel__info-button,
 .noise-info-modal__close {
   display: grid;
   place-items: center;
@@ -812,19 +822,22 @@ body {
 
 .map-status__layer-button:hover,
 .map-status__info-button:hover,
+.sensor-panel__info-button:hover,
 .noise-info-modal__close:hover {
   background: rgb(var(--rgb-text) / 10%);
 }
 
 .map-status__layer-button:focus-visible,
 .map-status__info-button:focus-visible,
+.sensor-panel__info-button:focus-visible,
 .noise-info-modal__close:focus-visible {
   outline: 3px solid rgb(var(--rgb-primary) / 45%);
   outline-offset: 2px;
 }
 
 .map-status__layer-button .material-symbols-outlined,
-.map-status__info-button .material-symbols-outlined {
+.map-status__info-button .material-symbols-outlined,
+.sensor-panel__info-button .material-symbols-outlined {
   font-size: 1.1rem;
 }
 

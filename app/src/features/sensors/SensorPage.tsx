@@ -16,6 +16,7 @@ import { prepareNoiseChartData, type NoiseChartData } from './noiseChartData.ts'
 import { SensorLocationMap } from './SensorLocationMap.tsx'
 import { SensorPanel } from './SensorPanel.tsx'
 import { getSensorLocalDate, shiftSensorLocalDate, toSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
+import { dayNightIcons } from '../config.ts'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
@@ -274,7 +275,25 @@ function SensorPage() {
                   <SensorPanel title="Last hourly record" icon="last_page">
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
-                  <SensorPanel title="Hourly average" icon="show_chart">
+                  <SensorPanel
+                    title="Hourly average"
+                    icon="show_chart"
+                    infoContent={(
+                      <>
+                        <p>
+                          This chart shows typical noise levels for each hour of the day, averaged across the most recent seven days of hourly measurements.
+                        </p>
+                        <p>
+                          The shading highlights nighttime as defined by the WHO health thresholds for outdoor noise:
+                          <p></p>
+                          <ul>
+                            <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
+                            <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
+                          </ul>                       
+                        </p>
+                      </>
+                    )}
+                  >
                     <HourlyProfile active={location.active} measurements={profileMeasurements} />
                   </SensorPanel>
                   <SensorPanel title={location.label} icon="location_on">
@@ -282,7 +301,20 @@ function SensorPage() {
                   </SensorPanel>
                 </div>
               )}
-              <SensorPanel title="Noise History" icon="calendar_month">
+              <SensorPanel
+                title="Noise History"
+                icon="calendar_month"
+                infoContent={(
+                  <>
+                    <p>
+                      Explore this sensor&apos;s noise measurements over a selected date range.
+                    </p>
+                    <p>
+                      Choose <strong>Hourly</strong> for hourly summaries or <strong>Raw</strong> for raw readings. Use the date fields to change the displayed period; annotations, when available, appear below the chart.
+                    </p>
+                  </>
+                )}
+              >
                 <NoiseChart
                   active={location.active}
                   measurements={measurements}
