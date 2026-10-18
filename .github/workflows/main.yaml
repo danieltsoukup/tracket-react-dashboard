@@ -1,0 +1,25 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    uses: ./.github/workflows/codeql.yaml
+
+  lint-unit-test:
+    uses: ./.github/workflows/lint_unit_test.yaml
+
+  deploy-production:
+    needs:
+      - codeql
+      - lint-unit-test
+    uses: ./.github/workflows/vercel_prod_deploy.yaml
+    secrets: inherit
