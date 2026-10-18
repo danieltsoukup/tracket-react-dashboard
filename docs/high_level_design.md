@@ -19,10 +19,7 @@ Frontend-only web application to present location and time-series data in a simp
 - Vite for development and production builds
 - React Router for map and object-detail routes
 - React-Leaflet for the interactive map, markers, popups, and layer controls
-- TanStack Query for API requests, caching, loading states, and refetching
 - Plotly.js for interactive time-series visualizations
-- Zustand for lightweight shared state such as selected marker, active layers, and map filters
-- Tailwind CSS library for consistent UI styling
 - npm for package management
 
 ## Data APIs
