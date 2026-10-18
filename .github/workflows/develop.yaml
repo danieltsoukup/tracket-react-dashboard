@@ -1,0 +1,26 @@
+name: Checks and Preview Deployment
+
+on:
+  push:
+    ignore:
+      - main
+      
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    uses: ./.github/workflows/codeql.yaml
+
+  lint-unit-test:
+    uses: ./.github/workflows/lint_unit_test.yaml
+
+  deploy-production:
+    needs:
+      - codeql
+      - lint-unit-test
+    uses: ./.github/workflows/vercel_preview_deploy.yaml
+    secrets: inherit
