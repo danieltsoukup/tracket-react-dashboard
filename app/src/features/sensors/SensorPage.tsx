@@ -284,13 +284,20 @@ function SensorPage() {
                           This chart shows typical noise levels for each hour of the day, averaged across the most recent seven days of hourly measurements.
                         </p>
                         <p>
-                          The shading highlights nighttime as defined by the WHO health thresholds for outdoor noise:
+                          The shading highlights nighttime as defined by the WHO health thresholds for outdoor noise which are shown by the dashed lines:
                           <p></p>
                           <ul>
                             <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
                             <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
                           </ul>                       
                         </p>
+                        <a
+        href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Read the Toronto Public Health reference
+      </a>
                       </>
                     )}
                   >
@@ -310,7 +317,23 @@ function SensorPage() {
                       Explore this sensor&apos;s noise measurements over a selected date range.
                     </p>
                     <p>
-                      Choose <strong>Hourly</strong> for hourly summaries or <strong>Raw</strong> for raw readings. Use the date fields to change the displayed period; annotations, when available, appear below the chart.
+                      You can swap between hourly aggregates and the raw measurements - we recommend loading a shorter date range for raw measurements to avoid long load times. Use the date fields to change the displayed period; annotations, when available, appear below the chart.
+                    </p>
+                    <p>
+                      The dashed lines show the WHO health thresholds for outdoor noise:
+                    </p>
+                    <ul>
+                      <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
+                      <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
+                    </ul>
+                    <p>
+                  <a
+                    href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Read the Toronto Public Health reference
+                  </a>
                     </p>
                   </>
                 )}
