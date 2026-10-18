@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { getLocationIcon, type LocationHealth } from './locations.config.ts'
 import { NoiseInfoDialog } from '../infoModal.tsx'
+import { dayNightIcons } from '../config.ts'
 
 type LocationCounts = {
   unhealthy: number
@@ -168,6 +169,28 @@ export function LocationsOverlay({
 }: LocationsOverlayProps) {
   const [isNoiseInfoOpen, setIsNoiseInfoOpen] = useState(false)
 
+  const noiseInfoContent = (
+    <>
+    <p>
+      Location markers turn red when their hourly mean exceeds the outdoor health thresholds set by the WHO.
+    </p>
+    <ul>
+      <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
+      <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
+      </ul>
+      <p>
+        Use the status toggles to filter which locations are shown on the map, including combining multiple health states at once.
+      </p>
+      <a
+        href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Read the Toronto Public Health reference
+      </a>
+      </>
+  )
+
   return (
     <>
       <MapResetButton onResetMap={onResetMap} />
@@ -190,7 +213,7 @@ export function LocationsOverlay({
         )}
       </div>
       <AverageCard averageMean={averageMean} averageHealth={averageHealth} visibleSensorCount={visibleSensorCount} isLoading={isLoading} error={!!error} />
-      <NoiseInfoDialog isOpen={isNoiseInfoOpen} onClose={() => setIsNoiseInfoOpen(false)} />
+      <NoiseInfoDialog isOpen={isNoiseInfoOpen} onClose={() => setIsNoiseInfoOpen(false)} title="How loud is too loud?" content={noiseInfoContent} />
     </>
   )
 }

@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { dayNightIcons } from './config.ts'
+import type { ReactNode } from 'react'
 
 type NoiseInfoDialogProps = {
   isOpen: boolean
   onClose: () => void
+  title: string
+  content: ReactNode
 }
 
-export function NoiseInfoDialog({ isOpen, onClose }: NoiseInfoDialogProps) {
+export function NoiseInfoDialog({ isOpen, onClose, title, content }: NoiseInfoDialogProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null)
 
   useEffect(() => {
@@ -36,18 +38,22 @@ export function NoiseInfoDialog({ isOpen, onClose }: NoiseInfoDialogProps) {
       }}
     >
       <div className="noise-info-modal__header">
-        <h2 id="noise-info-title">How loud is too loud?</h2>
+        {/* <h2 id="noise-info-title">How loud is too loud?</h2> */}
+        <h2 id="noise-info-title">{title}</h2>
         <button
           className="noise-info-modal__close"
           type="button"
-          aria-label="Close noise level guidance"
+          aria-label="Close info modal"
           title="Close"
           onClick={onClose}
         >
           <span className="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
       </div>
-      <p>
+      <div className="noise-info-modal__content">
+        {content}
+      </div>
+      {/* <p>
         Location markers turn red when their hourly mean exceeds the outdoor health thresholds set by the WHO.
       </p>
       <ul>
@@ -63,7 +69,7 @@ export function NoiseInfoDialog({ isOpen, onClose }: NoiseInfoDialogProps) {
         rel="noreferrer"
       >
         Read the Toronto Public Health reference
-      </a>
+      </a> */}
     </dialog>
   )
 }
