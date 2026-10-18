@@ -320,7 +320,7 @@ function SensorPage() {
                       You can swap between hourly aggregates and the raw measurements - we recommend loading a shorter date range for raw measurements to avoid long load times. Use the date fields to change the displayed period; annotations, when available, appear below the chart.
                     </p>
                     <p>
-                      The dashed lines show the WHO health thresholds for outdoor noise:
+                      The dashed lines show the maximum values measures and the WHO health thresholds for outdoor noise, marking what percentage of measurements were above limit for night and day, respectively:
                     </p>
                     <ul>
                       <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
