@@ -32,7 +32,7 @@ type LocationMarker = L.Marker & {
 
 const INITIAL_MAP_CENTER: L.LatLngExpression = [43.6532, -79.3832]
 const INITIAL_MAP_ZOOM = 3
-const LOCATION_MARKER_ICON_SIZE: L.PointExpression = [112, 34]
+const LOCATION_MARKER_ICON_SIZE: L.PointExpression = [112, 42]
 
 function getLocationMarkerContent(location: Location) {
   const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
@@ -192,7 +192,7 @@ function LocationsPage() {
           className: 'location-marker',
           html: `<div class="location-marker__content" style="--location-marker-color: ${color}">${getLocationMarkerContent(location)}</div>`,
           iconSize: LOCATION_MARKER_ICON_SIZE,
-          iconAnchor: [56, 17],
+          iconAnchor: [56, 42],
         }),
       }) as LocationMarker
 

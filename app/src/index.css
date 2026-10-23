@@ -1062,12 +1062,13 @@ body {
 
 .location-marker {
   width: 112px;
-  height: 34px;
+  height: 42px;
   background: transparent;
   border: 0;
 }
 
 .location-marker__content {
+  position: relative;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -1080,6 +1081,19 @@ body {
   border-radius: 999px;
   box-shadow: 0 3px 10px rgb(var(--rgb-text) / 16%);
   font-family: 'Inter', sans-serif;
+}
+
+.location-marker__content::after {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-top: 8px solid var(--surface-white-96);
+  border-right: 7px solid transparent;
+  border-left: 7px solid transparent;
+  content: '';
+  transform: translateX(-50%);
 }
 
 .location-marker__measurement {
@@ -1114,6 +1128,10 @@ body {
 
 .location-marker:hover .location-marker__content {
   background: var(--location-marker-color);
+}
+
+.location-marker:hover .location-marker__content::after {
+  border-top-color: var(--location-marker-color);
 }
 
 .location-marker:hover .location-marker__measurement {
