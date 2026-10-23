@@ -1060,6 +1060,54 @@ body {
   line-height: 1;
 }
 
+.location-marker {
+  width: 160px;
+  height: 42px;
+  background: transparent;
+  border: 0;
+}
+
+.location-marker__content {
+  box-sizing: border-box;
+  width: 160px;
+  min-height: 42px;
+  padding: 4px 7px;
+  color: rgb(var(--rgb-text));
+  background: var(--surface-white-96);
+  border: 1px solid rgb(var(--rgb-text) / 12%);
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgb(var(--rgb-text) / 16%);
+  font-family: 'Inter', sans-serif;
+}
+
+.location-marker__measurement {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--location-marker-color);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.location-marker__measurement .material-symbols-outlined {
+  flex: 0 0 auto;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.location-marker .location-tooltip__timestamp {
+  gap: 4px;
+  margin-top: 3px;
+  overflow: hidden;
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .marker-cluster.location-cluster--active {
   background-color: rgb(var(--rgb-primary) / 60%) !important;
 }

@@ -10,7 +10,6 @@ import L from 'leaflet'
 import 'leaflet.markercluster'
 import { useEffect, useRef, useState } from 'react'
 import {
-  LOCATION_MARKER_OPTIONS,
   LOCATION_STATUS_COLORS,
   LOCATION_TILE_ATTRIBUTION,
   LOCATION_TILE_URL,
@@ -27,7 +26,7 @@ import type { Location } from './locations.types.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
 import { getTimeOfDayIcon } from '../sensors/chartTooltip.ts'
 
-type LocationMarker = L.CircleMarker & {
+type LocationMarker = L.Marker & {
   locationActive: boolean
   locationHourEnd: string
   locationHourMean: number
@@ -35,6 +34,7 @@ type LocationMarker = L.CircleMarker & {
 
 const INITIAL_MAP_CENTER: L.LatLngExpression = [43.6532, -79.3832]
 const INITIAL_MAP_ZOOM = 3
+const LOCATION_MARKER_ICON_SIZE: L.PointExpression = [160, 42]
 const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
   timeZone: 'UTC',
   dateStyle: 'medium',
@@ -45,17 +45,12 @@ function formatMeasurementDate(timestamp: string) {
   return formatSensorTimestamp(timestamp, measurementDateFormatter)
 }
 
-function getLocationInfo(location: Location) {
+function getLocationMarkerContent(location: Location) {
   const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
-  const color = getLocationColor(location.active, location.hourEnd, location.hourMean)
   const meanNoise = location.hourMean.toFixed(1)
   const sensorIcon = getLocationIcon(health)
-  const timeOfDayIcon = getTimeOfDayIcon(location.hourEnd)
-  const timeOfDayIconMarkup = timeOfDayIcon
-    ? `<span class="material-symbols-outlined location-tooltip__time-icon" aria-hidden="true">${timeOfDayIcon}</span>`
-    : ''
-
-  return `<div class="location-tooltip__label"><span class="material-symbols-outlined" style="color: ${color}" aria-hidden="true">${sensorIcon}</span><span class="location-tooltip__title">${location.label}</span></div><div class="location-tooltip__value" style="color: ${color}">${meanNoise} dB</div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.hourEnd)}${timeOfDayIconMarkup}</div>`
+  
+  return `<div class="location-marker__measurement"><span class="material-symbols-outlined" aria-hidden="true">${sensorIcon}</span><span>${meanNoise} dB</span></div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.hourEnd)}</div>`
 }
 
 function LocationsPage() {
@@ -203,10 +198,13 @@ function LocationsPage() {
       const position: L.LatLngExpression = [location.latitude, location.longitude]
       const color = getLocationColor(location.active, location.hourEnd, location.hourMean)
 
-      const marker = L.circleMarker(position, {
-        ...LOCATION_MARKER_OPTIONS,
-        color,
-        fillColor: color,
+      const marker = L.marker(position, {
+        icon: L.divIcon({
+          className: 'location-marker',
+          html: `<div class="location-marker__content" style="--location-marker-color: ${color}">${getLocationMarkerContent(location)}</div>`,
+          iconSize: LOCATION_MARKER_ICON_SIZE,
+          iconAnchor: [80, 21],
+        }),
       }) as LocationMarker
 
       marker.locationActive = location.active
@@ -214,11 +212,6 @@ function LocationsPage() {
       marker.locationHourMean = location.hourMean
 
       marker
-        .bindTooltip(getLocationInfo(location), {
-          className: 'location-tooltip',
-          direction: 'top',
-          offset: [0, -8],
-        })
         .on('click', () => window.open(`/locations/${location.id}`, '_blank', 'noopener,noreferrer'))
         .addTo(markers)
 
