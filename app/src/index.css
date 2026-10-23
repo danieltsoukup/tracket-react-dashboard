@@ -634,6 +634,15 @@ body {
   width: 100%;
 }
 
+@media (max-width: 640px) {
+  .location-map .leaflet-control-attribution {
+    max-width: calc(100vw - 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 /* Map status and information overlays */
 .map-status-group {
   position: absolute;
