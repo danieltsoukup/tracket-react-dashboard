@@ -1112,6 +1112,19 @@ body {
   line-height: 1;
 }
 
+.location-marker:hover .location-marker__content {
+  background: var(--location-marker-color);
+}
+
+.location-marker:hover .location-marker__measurement {
+  color: rgb(var(--rgb-white));
+}
+
+.location-marker:hover .location-marker__icon {
+  color: var(--location-marker-color);
+  background: rgb(var(--rgb-white));
+}
+
 .marker-cluster.location-cluster--active {
   background-color: rgb(var(--rgb-primary) / 60%) !important;
 }
