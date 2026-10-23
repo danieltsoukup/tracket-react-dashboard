@@ -23,8 +23,6 @@ import {
 import { fetchLocations } from './locations.api.ts'
 import { LocationsOverlay } from './LocationsOverlay.tsx'
 import type { Location } from './locations.types.ts'
-import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
-import { getTimeOfDayIcon } from '../sensors/chartTooltip.ts'
 
 type LocationMarker = L.Marker & {
   locationActive: boolean
@@ -34,23 +32,14 @@ type LocationMarker = L.Marker & {
 
 const INITIAL_MAP_CENTER: L.LatLngExpression = [43.6532, -79.3832]
 const INITIAL_MAP_ZOOM = 3
-const LOCATION_MARKER_ICON_SIZE: L.PointExpression = [160, 42]
-const measurementDateFormatter = new Intl.DateTimeFormat(undefined, {
-  timeZone: 'UTC',
-  dateStyle: 'medium',
-  timeStyle: 'short',
-})
-
-function formatMeasurementDate(timestamp: string) {
-  return formatSensorTimestamp(timestamp, measurementDateFormatter)
-}
+const LOCATION_MARKER_ICON_SIZE: L.PointExpression = [112, 34]
 
 function getLocationMarkerContent(location: Location) {
   const health = getLocationHealth(location.active, location.hourEnd, location.hourMean)
   const meanNoise = location.hourMean.toFixed(1)
   const sensorIcon = getLocationIcon(health)
-  
-  return `<div class="location-marker__measurement"><span class="material-symbols-outlined" aria-hidden="true">${sensorIcon}</span><span>${meanNoise} dB</span></div><div class="location-tooltip__timestamp">${formatMeasurementDate(location.hourEnd)}</div>`
+
+  return `<div class="location-marker__measurement"><span class="location-marker__icon"><span class="material-symbols-outlined" aria-hidden="true">${sensorIcon}</span></span><span>${meanNoise} dB</span></div>`
 }
 
 function LocationsPage() {
@@ -203,7 +192,7 @@ function LocationsPage() {
           className: 'location-marker',
           html: `<div class="location-marker__content" style="--location-marker-color: ${color}">${getLocationMarkerContent(location)}</div>`,
           iconSize: LOCATION_MARKER_ICON_SIZE,
-          iconAnchor: [80, 21],
+          iconAnchor: [56, 17],
         }),
       }) as LocationMarker
 
