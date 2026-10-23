@@ -71,16 +71,7 @@ function LocationStatus({
     { key: 'active', label: 'Active', count: active },
     { key: 'inactive', label: 'Inactive', count: inactive },
   ]
-  const [isCollapsed, setIsCollapsed] = useState(() => window.matchMedia('(max-width: 640px)').matches)
-
-  useEffect(() => {
-    const smallScreen = window.matchMedia('(max-width: 640px)')
-    const updateCollapsedState = () => setIsCollapsed(smallScreen.matches)
-
-    smallScreen.addEventListener('change', updateCollapsedState)
-
-    return () => smallScreen.removeEventListener('change', updateCollapsedState)
-  }, [])
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
     <div className={isCollapsed ? 'map-status map-status--collapsed' : 'map-status'} aria-live="polite">
@@ -116,7 +107,8 @@ function LocationStatus({
                     <span className={`material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--${key}`} aria-hidden="true">
                       {getLocationIcon(key)}
                     </span>
-                    <span>{label}: {count}</span>
+                    <span className="map-status__label">{label}: </span>
+                    <span className="map-status__count-value">{count}</span>
                   </button>
                 )
               })}

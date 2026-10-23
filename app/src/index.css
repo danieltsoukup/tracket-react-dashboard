@@ -724,22 +724,27 @@ body {
 @media (max-width: 640px) {
   .map-status {
     width: max-content;
-    border-radius: 16px;
+    border-radius: 999px;
+    padding: 6px 8px;
   }
 
   .map-status__counts {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 6px;
+    gap: 4px;
   }
 
   .map-status__count {
     justify-content: center;
+    gap: 3px;
+    padding: 5px 6px;
+  }
+
+  .map-status__label {
+    display: none;
   }
 
   .map-status__layer-button,
   .map-status__info-button {
-    align-self: center;
+    flex: 0 0 24px;
   }
 }
 
