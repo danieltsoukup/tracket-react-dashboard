@@ -11,9 +11,9 @@ tRacket is a citizen-science initiative to better understand ambient sound level
 
 Our application presents a real-time, interactive visual interface to our system of IoT sound meters and the measurements of inidividual sensors.
 
-The first version of the app can be accessed [by following this link](https://dashboard.tracket.info/locations) which gives you the system level map view. Individual devices can be reached by appending `/<location-id>` to the previous URL [like this](https://dashboard.tracket.info/locations/572234). The app might take a few seconds to load.
+**Version 1**: The first version of the app can be accessed [by following this link](https://dashboard.tracket.info/locations) which gives you the system level map view. Individual devices can be reached by appending `/<location-id>` to the previous URL [like this](https://dashboard.tracket.info/locations/572234). The app might take a few seconds to load. See the [repo](https://github.com/CivicTechTO/tRacket-dashboard) for the source code.
 
-The current repo holds version 2 of our dashboard developed using Typescript and React for better functionality, custom styling, and performance. This new version is not yet deployed and under active development.
+**Version 2**: The current repo holds version 2 of our dashboard developed using Typescript and React for better functionality, custom styling, and performance. This new version is not yet deployed and under active development. A live version can be accessed [here](https://tracket-react-dashboard.vercel.app/locations).
 
 The project has been started and is maintained by volunteers from the [CivicTech Toronto](http://www.civictech.ca) community.
 
@@ -23,4 +23,4 @@ We followed Privacy by Design principles in setting up the data collection.
 
 1. The sound meter devices are deployed on private properties in residential areas at different locations in the city. We are **not publishing exact device locations**. 
 2. The devices **do not record sound** only sound levels in A-weighted decibel levels [dBA](https://en.wikipedia.org/wiki/Decibel). 
-3. We calculate minimum and maximum sound levels at 5 minute intervals on the device and **only broadcast these aggregate values** (along wiht the device ID) to a database. 
+3. We calculate minimum and maximum sound levels at 1-to-5 minute intervals on the device and **only broadcast these aggregate values** (along wiht the device ID) to a database. 
