@@ -276,7 +276,7 @@ function SensorPage() {
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
                   <SensorPanel
-                    title="Hourly average"
+                    title="Daily noise profile"
                     icon="show_chart"
                     infoContent={(
                       <>
@@ -308,7 +308,7 @@ function SensorPage() {
                 </div>
               )}
               <SensorPanel
-                title="Noise History"
+                title="Noise history"
                 icon="calendar_month"
                 infoContent={(
                   <>
