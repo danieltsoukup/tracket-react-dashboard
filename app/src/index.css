@@ -325,6 +325,7 @@ body {
   .sensor-insights {
     grid-template-columns: 1fr;
   }
+
 }
 
 .noise-chart-tooltip {
@@ -464,6 +465,58 @@ body {
   margin: 2px 24px 0 56px;
   color: rgb(var(--rgb-muted));
   font-size: 0.75rem;
+}
+
+.noise-chart-facts {
+  --noise-chart-fact-gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--noise-chart-fact-gap);
+  width: auto;
+  margin: 18px 24px 0 56px;
+}
+
+.noise-chart-fact {
+  min-width: 0;
+  width: 50%;
+  justify-self: center;
+  text-align: center;
+}
+
+.noise-chart-fact__value {
+  color: rgb(var(--rgb-muted));
+  font-family: 'Familjen Grotesk', sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.noise-chart-fact__description {
+  margin: 6px 0 0;
+  color: rgb(var(--rgb-muted));
+  font-size: 0.8rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 960px) {
+  .noise-chart-facts {
+    --noise-chart-fact-gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .noise-chart-facts {
+    grid-template-columns: 1fr;
+    --noise-chart-fact-gap: 14px;
+    margin-left: 56px;
+    width: auto;
+  }
+
+  .noise-chart-fact {
+    width: 100%;
+  }
 }
 
 .noise-chart__loading {

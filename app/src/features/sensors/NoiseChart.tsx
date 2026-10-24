@@ -93,6 +93,15 @@ function getMaximumIndicatorLayout(maximum: number | null): Partial<Plotly.Layou
   }
 }
 
+function NoiseFactCard({ value, description }: { value: string; description: string }) {
+  return (
+    <div className="noise-chart-fact">
+      <div className="noise-chart-fact__value">{value}</div>
+      <p className="noise-chart-fact__description">{description}</p>
+    </div>
+  )
+}
+
 export function NoiseChart({
   active,
   measurements,
@@ -127,6 +136,16 @@ export function NoiseChart({
       ? prepareAnnotationTimelineDataForRange(annotations, visibleRange[0], visibleRange[1])
       : chartRangeData,
     [annotations, chartRangeData, visibleRange],
+  )
+  const factRangeStart = visibleRange?.[0] ?? chartRangeData.rangeStart
+  const factRangeEnd = visibleRange?.[1] ?? chartRangeData.rangeEnd
+  const maximumNoise = useMemo(
+    () => getMaximumNoiseLevelInRange(chartData.points, factRangeStart, factRangeEnd),
+    [chartData.points, factRangeEnd, factRangeStart],
+  )
+  const aboveLimitPercentages = useMemo(
+    () => getMeanAboveHealthLimitPercentagesInRange(chartData.points, factRangeStart, factRangeEnd),
+    [chartData.points, factRangeEnd, factRangeStart],
   )
   const timelineDataRef = useRef(timelineData)
 
@@ -728,6 +747,20 @@ export function NoiseChart({
         {!areAnnotationsLoading && !annotationError && timelineData.intervals.length === 0 && (
           <p className="noise-chart-notes__status">No notes available.</p>
         )}
+        <div className="noise-chart-facts" aria-label="Noise history statistics">
+          <NoiseFactCard
+            value={maximumNoise === null ? '—' : `${maximumNoise.toFixed(1)} dB`}
+            description="Maximum recorded noise"
+          />
+          <NoiseFactCard
+            value={aboveLimitPercentages.daytime === null ? '—' : `${Math.round(aboveLimitPercentages.daytime)}%`}
+            description="Of daytime measurements above the 55 dB limit (07:00–23:00)"
+          />
+          <NoiseFactCard
+            value={aboveLimitPercentages.nighttime === null ? '—' : `${Math.round(aboveLimitPercentages.nighttime)}%`}
+            description="Of nighttime measurements above the 40 dB limit (23:00–07:00)"
+          />
+        </div>
         {tooltip && (
           <div
             ref={tooltipRef}
