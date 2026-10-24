@@ -56,6 +56,10 @@ export function getLocationIcon(status: LocationStatusIcon): string {
 const ACTIVE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 export function isLocationActive(latestTimestamp: string, now = Date.now()): boolean {
+  /**
+   * Determine if a location is considered active based on its latest timestamp.
+   * A location is active if its latest timestamp is within the last 24 hours.
+   */
   const timestamp = new Date(latestTimestamp).getTime()
 
   return Number.isFinite(timestamp) && timestamp <= now && now - timestamp <= ACTIVE_WINDOW_MS

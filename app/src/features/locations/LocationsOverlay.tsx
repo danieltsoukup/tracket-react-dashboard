@@ -170,14 +170,17 @@ function NoiseInfoDialog({ isOpen, onClose }: NoiseInfoDialogProps) {
         </button>
       </div>
       <p>
-        Location markers turn red when their hourly mean exceeds the outdoor health thresholds set by the WHO.
+        Location marker colors reflect if their hourly mean exceeds the outdoor health limit set by the WHO.
       </p>
       <ul>
         <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
         <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
       </ul>
       <p>
-        Use the status toggles to filter which locations are shown on the map, including combining multiple health states at once.
+        Use the status toggles to filter which locations are shown on the map, including combining multiple states at once.
+      </p>
+      <p>
+        Sensors are marked inactive if they have not reported any data in the last 24 hours.
       </p>
       <p>The average pill shows the latest hourly reading average across sensors in the current map view.</p>
       <a
