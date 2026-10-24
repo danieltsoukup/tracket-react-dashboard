@@ -46,7 +46,7 @@ const LOCATION_STATUS_ICONS: Record<LocationStatusIcon, string> = {
   unhealthy: 'sensors',
   active: 'sensors',
   inactive: 'sensors_off',
-  average: 'functions',
+  average: 'graphic_eq',
 }
 
 export function getLocationIcon(status: LocationStatusIcon): string {
