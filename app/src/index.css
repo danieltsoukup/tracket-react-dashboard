@@ -750,7 +750,7 @@ body {
   color: rgb(var(--rgb-white));
   border-radius: 50%;
   font-size: 1rem;
-  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20;
 }
 
 .map-status__average > span:last-child {
@@ -914,7 +914,7 @@ body {
 
 .leaflet-top.leaflet-left {
   top: auto;
-  bottom: 72px;
+  bottom: 50px;
 }
 
 .leaflet-left .leaflet-control {
@@ -923,37 +923,6 @@ body {
 
 .leaflet-control-zoom {
   width: 30px;
-}
-
-.map-reset-button {
-  position: absolute;
-  left: 12px;
-  bottom: 24px;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  width: 35px;
-  height: 35px;
-  padding: 0;
-  color: rgb(var(--rgb-text));
-  background: var(--surface-white-94);
-  border: 1px solid rgb(var(--rgb-text) / 14%);
-  border-radius: 4px;
-  box-shadow: 0 3px 12px rgb(var(--rgb-text) / 18%);
-  cursor: pointer;
-}
-
-.map-reset-button:hover {
-  background: rgb(var(--rgb-white));
-}
-
-.map-reset-button:focus-visible {
-  outline: 3px solid rgb(var(--rgb-primary) / 45%);
-  outline-offset: 2px;
-}
-
-.map-reset-button .material-symbols-outlined {
-  font-size: 1.3rem;
 }
 
 .leaflet-control-layers {

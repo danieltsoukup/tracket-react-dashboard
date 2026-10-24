@@ -1,6 +1,6 @@
 /**
  * @file LocationsOverlay.tsx
- * @description This file contains the overlay component for the locations map, including the reset button, status display, and noise level guidance dialog.
+ * @description This file contains the overlay component for the locations map, including status display and noise level guidance dialog.
  */
 import { useEffect, useRef, useState } from 'react'
 import { getLocationIcon, type LocationHealth } from './locations.config.ts'
@@ -20,7 +20,6 @@ type LocationsOverlayProps = LocationCounts & {
   onToggleStatus: (status: LocationHealth) => void
   isLoading: boolean
   error: string | null
-  onResetMap: () => void
   averageMean: number | null
   averageHealth: LocationHealth | null
 }
@@ -41,20 +40,6 @@ type LocationStatusProps = LocationCounts & {
 type NoiseInfoDialogProps = {
   isOpen: boolean
   onClose: () => void
-}
-
-function MapResetButton({ onResetMap }: { onResetMap: () => void }) {
-  return (
-    <button
-      className="map-reset-button"
-      type="button"
-      aria-label="Reset map view"
-      title="Reset map view"
-      onClick={onResetMap}
-    >
-      <span className="material-symbols-outlined" aria-hidden="true">public</span>
-    </button>
-  )
 }
 
 function LocationStatus({
@@ -214,7 +199,6 @@ export function LocationsOverlay({
   onToggleStatus,
   isLoading,
   error,
-  onResetMap,
   averageMean,
   averageHealth,
 }: LocationsOverlayProps) {
@@ -222,7 +206,6 @@ export function LocationsOverlay({
 
   return (
     <>
-      <MapResetButton onResetMap={onResetMap} />
       <div className="map-status-group">
         <LocationStatus
           unhealthy={unhealthy}

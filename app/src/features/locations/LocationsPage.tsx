@@ -209,10 +209,6 @@ function LocationsPage() {
 
   }, [locations, selectedStatuses])
 
-  function resetMapView() {
-    mapRef.current?.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM)
-  }
-
   function toggleStatus(status: LocationHealth) {
     setSelectedStatuses((current) => ({
       ...current,
@@ -259,7 +255,6 @@ function LocationsPage() {
         onToggleStatus={toggleStatus}
         isLoading={isLoading}
         error={error}
-        onResetMap={resetMapView}
         averageMean={visibleMeanAverage}
         averageHealth={majorityViewportHealth}
       />
