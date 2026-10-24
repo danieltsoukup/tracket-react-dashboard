@@ -222,9 +222,9 @@ export function NoiseChart({
     }))
     const healthThresholdIconShapes: NonNullable<Plotly.Layout['shapes']> = healthThresholdLines.map(({ value }) => ({
       type: 'circle',
-      xref: 'x',
+      xref: 'paper',
       xsizemode: 'pixel',
-      xanchor: new Date(chartRangeData.rangeStart).toISOString(),
+      xanchor: 0,
       x0: 0,
       x1: 22,
       yref: 'y',
