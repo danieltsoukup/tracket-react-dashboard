@@ -912,20 +912,33 @@ body {
   font-weight: 700;
 }
 
+.leaflet-top.leaflet-left {
+  top: auto;
+  bottom: 72px;
+}
+
+.leaflet-left .leaflet-control {
+  margin-left: 16px;
+}
+
+.leaflet-control-zoom {
+  width: 30px;
+}
+
 .map-reset-button {
   position: absolute;
-  left: 16px;
+  left: 12px;
   bottom: 24px;
   z-index: 1000;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   padding: 0;
   color: rgb(var(--rgb-text));
   background: var(--surface-white-94);
   border: 1px solid rgb(var(--rgb-text) / 14%);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 3px 12px rgb(var(--rgb-text) / 18%);
   cursor: pointer;
 }
