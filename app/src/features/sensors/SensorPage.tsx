@@ -16,6 +16,7 @@ import { prepareNoiseChartData, type NoiseChartData } from './noiseChartData.ts'
 import { SensorLocationMap } from './SensorLocationMap.tsx'
 import { SensorPanel } from './SensorPanel.tsx'
 import { getSensorLocalDate, shiftSensorLocalDate, toSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
+import { dayNightIcons } from '../config.ts'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
@@ -274,7 +275,31 @@ function SensorPage() {
                   <SensorPanel title="Last hourly record" icon="last_page">
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
-                  <SensorPanel title="Hourly average" icon="show_chart">
+                  <SensorPanel
+                    title="Hourly average"
+                    icon="show_chart"
+                    infoContent={(
+                      <>
+                        <p>
+                          This chart shows typical noise levels for each hour of the day, averaged across the most recent seven days of hourly measurements.
+                        </p>
+                        <p>
+                          The shading highlights nighttime as defined by the WHO health thresholds for outdoor noise which are shown by the dashed lines:
+                        </p>
+                        <ul>
+                          <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
+                          <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
+                        </ul>
+                        <a
+                          href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Read the Toronto Public Health reference
+                        </a>
+                      </>
+                    )}
+                  >
                     <HourlyProfile active={location.active} measurements={profileMeasurements} />
                   </SensorPanel>
                   <SensorPanel title={location.label} icon="location_on">
@@ -282,7 +307,36 @@ function SensorPage() {
                   </SensorPanel>
                 </div>
               )}
-              <SensorPanel title="Noise History" icon="calendar_month">
+              <SensorPanel
+                title="Noise History"
+                icon="calendar_month"
+                infoContent={(
+                  <>
+                    <p>
+                      Explore this sensor&apos;s noise measurements over a selected date range.
+                    </p>
+                    <p>
+                      You can swap between hourly aggregates and the raw measurements - we recommend loading a shorter date range for raw measurements to avoid long load times. Use the date fields to change the displayed period; annotations, when available, appear below the chart.
+                    </p>
+                    <p>
+                      The dashed lines show the maximum measured value and the WHO health thresholds for outdoor noise, including what percentage of measurements were above the night and day limits:
+                    </p>
+                    <ul>
+                      <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
+                      <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
+                    </ul>
+                    <p>
+                      <a
+                        href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Read the Toronto Public Health reference
+                      </a>
+                    </p>
+                  </>
+                )}
+              >
                 <NoiseChart
                   active={location.active}
                   measurements={measurements}
