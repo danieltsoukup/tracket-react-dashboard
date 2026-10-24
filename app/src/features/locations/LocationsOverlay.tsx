@@ -122,7 +122,8 @@ function LocationStatus({
                   title="Viewport average"
                 >
                   <span className="material-symbols-outlined" aria-hidden="true">{getLocationIcon('average')}</span>
-                  <span>{averageMean.toFixed(1)} <span>dB</span></span>
+                  <span className="map-status__label">Average dB:</span>
+                  <span>{averageMean.toFixed(1)}</span>
                 </span>
               )}
               <button
@@ -193,7 +194,7 @@ function NoiseInfoDialog({ isOpen, onClose }: NoiseInfoDialogProps) {
       <p>
         Use the status toggles to filter which locations are shown on the map, including combining multiple health states at once.
       </p>
-      <p>The functions pill shows the average latest hourly reading across sensors in the current map view.</p>
+      <p>The average pill shows the latest hourly reading average across sensors in the current map view.</p>
       <a
         href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
         target="_blank"
