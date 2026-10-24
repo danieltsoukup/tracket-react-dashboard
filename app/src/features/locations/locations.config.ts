@@ -40,14 +40,17 @@ export function getMostCommonLocationHealth(counts: Record<LocationHealth, numbe
     : null
 }
 
-const LOCATION_STATUS_ICONS: Record<LocationHealth, string> = {
+export type LocationStatusIcon = LocationHealth | 'average'
+
+const LOCATION_STATUS_ICONS: Record<LocationStatusIcon, string> = {
   unhealthy: 'sensors',
   active: 'sensors',
   inactive: 'sensors_off',
+  average: 'functions',
 }
 
-export function getLocationIcon(health: LocationHealth): string {
-  return LOCATION_STATUS_ICONS[health]
+export function getLocationIcon(status: LocationStatusIcon): string {
+  return LOCATION_STATUS_ICONS[status]
 }
 
 const ACTIVE_WINDOW_MS = 24 * 60 * 60 * 1000

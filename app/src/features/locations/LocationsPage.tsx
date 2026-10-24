@@ -262,7 +262,6 @@ function LocationsPage() {
         onResetMap={resetMapView}
         averageMean={visibleMeanAverage}
         averageHealth={majorityViewportHealth}
-        visibleSensorCount={selectedViewportLocations.length}
       />
     </main>
   )
