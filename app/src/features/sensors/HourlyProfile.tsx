@@ -8,7 +8,6 @@ import type { TimeOfDayIcon } from './chartTooltip.ts'
 import {
   getLocationHealth,
   LOCATION_HEALTH_HOURS,
-  LOCATION_HEALTH_THRESHOLDS,
 } from '../locations/locations.config.ts'
 import type { LocationHealth } from '../locations/locations.config.ts'
 import { getSensorLocalDate } from '../../utils/sensorLocalTime.ts'
@@ -132,17 +131,6 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
       },
     ]
 
-    const healthThresholdLines = [
-      {
-        value: LOCATION_HEALTH_THRESHOLDS.nighttime,
-        icon: dayNightIcons.night,
-      },
-      {
-        value: LOCATION_HEALTH_THRESHOLDS.daytime,
-        icon: dayNightIcons.day,
-      },
-    ]
-
     const nightZones = [
       { start: 0, end: LOCATION_HEALTH_HOURS.daytimeStart },
       { start: LOCATION_HEALTH_HOURS.daytimeEnd, end: 24 },
@@ -197,46 +185,6 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
           fillcolor: '#E9ECEA',
           line: { width: 0 },
           layer: 'below' as const,
-        })),
-        ...healthThresholdLines.map(({ value }) => ({
-          type: 'line' as const,
-          xref: 'x' as const,
-          x0: 0,
-          x1: 24,
-          yref: 'y' as const,
-          y0: value,
-          y1: value,
-          line: { color: chartColors.spike, width: 1, dash: 'dash' as const },
-        })),
-        ...healthThresholdLines.map(({ value }) => ({
-          type: 'circle' as const,
-          xref: 'x' as const,
-          xsizemode: 'pixel' as const,
-          xanchor: 0.15,
-          x0: 0,
-          x1: 22,
-          yref: 'y' as const,
-          ysizemode: 'pixel' as const,
-          yanchor: value,
-          y0: -11,
-          y1: 11,
-          fillcolor: 'rgba(255, 255, 255, 0.55)',
-          line: { width: 0 },
-          layer: 'above' as const,
-        })),
-      ],
-      annotations: [
-        ...healthThresholdLines.map(({ value, icon }) => ({
-          xref: 'x' as const,
-          x: 0.15,
-          xshift: 11,
-          yref: 'y' as const,
-          y: value,
-          text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span>`,
-          showarrow: false,
-          xanchor: 'center' as const,
-          yanchor: 'middle' as const,
-          font: { color: chartColors.spike, size: 14 },
         })),
       ],
       hovermode: 'x',

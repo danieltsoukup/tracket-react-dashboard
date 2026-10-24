@@ -284,7 +284,7 @@ function SensorPage() {
                           This chart shows typical noise levels for each hour of the day, averaged across the most recent seven days of hourly measurements.
                         </p>
                         <p>
-                          The shading highlights nighttime as defined by the WHO health thresholds for outdoor noise which are shown by the dashed lines:
+                          The shading highlights nighttime. WHO outdoor noise health limits are:
                         </p>
                         <ul>
                           <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
@@ -319,7 +319,7 @@ function SensorPage() {
                       You can swap between hourly aggregates and the raw measurements - we recommend loading a shorter date range for raw measurements to avoid long load times. Use the date fields to change the displayed period; annotations, when available, appear below the chart.
                     </p>
                     <p>
-                      The dashed lines show the maximum measured value and the WHO health thresholds for outdoor noise, including what percentage of measurements were above the night and day limits:
+                      The dashed lines mark the WHO outdoor noise health limits. The cards below the chart show the maximum recorded value and the percentage of measurements above each limit:
                     </p>
                     <ul>
                       <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>

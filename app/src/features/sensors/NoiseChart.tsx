@@ -14,7 +14,6 @@ import {
   getMaximumNoiseLevelInRange,
   getMeanAboveHealthLimitPercentagesInRange,
 } from './noiseChartData.ts'
-import type { MeanAboveHealthLimitPercentages } from './noiseChartData.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
 import {
   getLocationHealth,
@@ -22,7 +21,7 @@ import {
   LOCATION_HEALTH_THRESHOLDS,
 } from '../locations/locations.config.ts'
 import { formatSensorTimestamp } from '../../utils/sensorLocalTime.ts'
-import { chartColors, chartFont, dayNightIcons } from '../config.ts'
+import { chartColors, chartFont } from '../config.ts'
 import { getTimeOfDayIcon } from './chartTooltip.ts'
 import type { ChartTooltip } from './chartTooltip.ts'
 
@@ -88,7 +87,7 @@ export function NoiseChart({
   const [showHealthThresholds, setShowHealthThresholds] = useState(true)
   const showHealthThresholdsRef = useRef(showHealthThresholds)
   const getChartIndicatorLayoutRef = useRef<
-    ((aboveLimitPercentages: MeanAboveHealthLimitPercentages, showThresholds: boolean) => Partial<Plotly.Layout>) | null
+    ((showThresholds: boolean) => Partial<Plotly.Layout>) | null
   >(null)
   const chartRangeData = useMemo(
     () => prepareAnnotationTimelineData(annotations, start, end),
@@ -135,14 +134,7 @@ export function NoiseChart({
     const chart = chartRef.current as PlotlyChartElement | null
     const getChartIndicatorLayout = getChartIndicatorLayoutRef.current
     if (chart && getChartIndicatorLayout) {
-      void Plotly.relayout(chart, getChartIndicatorLayout(
-        getMeanAboveHealthLimitPercentagesInRange(
-          chartData.points,
-          visibleRange?.[0] ?? chartRangeData.rangeStart,
-          visibleRange?.[1] ?? chartRangeData.rangeEnd,
-        ),
-        nextShowHealthThresholds,
-      ))
+      void Plotly.relayout(chart, getChartIndicatorLayout(nextShowHealthThresholds))
     }
   }
 
@@ -164,22 +156,15 @@ export function NoiseChart({
 
     const lineWidths = granularity === 'hourly' ? { range: 1, mean: 3 } : { range: 0.5, mean: 1.5 }
     const traces: Plotly.Data[] = []
-    let displayedAboveLimitPercentages = getMeanAboveHealthLimitPercentagesInRange(
-      chartData.points,
-      chartRangeData.rangeStart,
-      chartRangeData.rangeEnd,
-    )
     const dayNightShapes: NonNullable<Plotly.Layout['shapes']> = []
     const healthThresholdLines = [
       {
         period: 'nighttime' as const,
         value: LOCATION_HEALTH_THRESHOLDS.nighttime,
-        icon: dayNightIcons.night,
       },
       {
         period: 'daytime' as const,
         value: LOCATION_HEALTH_THRESHOLDS.daytime,
-        icon: dayNightIcons.day,
       },
     ]
     const healthThresholdShapes: NonNullable<Plotly.Layout['shapes']> = healthThresholdLines.map(({ value }) => ({
@@ -191,34 +176,6 @@ export function NoiseChart({
       y0: value,
       y1: value,
       line: { color: chartColors.spike, width: 1, dash: 'dash' },
-    }))
-    const healthThresholdIconShapes: NonNullable<Plotly.Layout['shapes']> = healthThresholdLines.map(({ value }) => ({
-      type: 'circle',
-      xref: 'paper',
-      xsizemode: 'pixel',
-      xanchor: 0,
-      x0: 0,
-      x1: 22,
-      yref: 'y',
-      ysizemode: 'pixel',
-      yanchor: value,
-      y0: -11,
-      y1: 11,
-      fillcolor: 'rgba(255, 255, 255, 0.75)',
-      line: { width: 0 },
-      layer: 'above',
-    }))
-    const healthThresholdAnnotations: NonNullable<Plotly.Layout['annotations']> = healthThresholdLines.map(({ value, icon }) => ({
-      xref: 'paper',
-      x: 0,
-      xshift: 11,
-      yref: 'y',
-      y: value,
-      text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span>`,
-      showarrow: false,
-      xanchor: 'center',
-      yanchor: 'middle',
-      font: { ...chartFont, color: chartColors.spike, size: 14 },
     }))
     const dayDuration = 24 * 60 * 60 * 1000
 
@@ -255,39 +212,32 @@ export function NoiseChart({
       )
     }
 
-    function getChartIndicatorLayout(
-      aboveLimitPercentages: MeanAboveHealthLimitPercentages,
-      showThresholds: boolean,
-    ): Partial<Plotly.Layout> {
-      const rateAnnotations: NonNullable<Plotly.Layout['annotations']> = showThresholds ? healthThresholdLines.flatMap(
-        ({ period, value }) => {
-          const percentage = aboveLimitPercentages[period]
-          return percentage === null ? [] : [{
-            xref: 'paper' as const,
-            x: 1,
-            yref: 'y' as const,
-            y: value,
-            text: `Average ${Math.round(percentage)}% above <br>${period} limit`,
-            showarrow: false,
-            xanchor: 'right' as const,
-            yanchor: 'bottom' as const,
-            yshift: 4,
-            font: { ...chartFont, color: chartColors.spike },
-            bgcolor: chartColors.background,
-            opacity: 0.8,
-            borderpad: 2,
-          }]
-        },
-      ) : []
+    function getChartIndicatorLayout(showThresholds: boolean): Partial<Plotly.Layout> {
+      const thresholdAnnotations: NonNullable<Plotly.Layout['annotations']> = showThresholds
+        ? healthThresholdLines.map(({ period, value }) => ({
+          xref: 'paper' as const,
+          x: 1,
+          yref: 'y' as const,
+          y: value,
+          text: `${period === 'daytime' ? 'Daytime' : 'Nighttime'} health limit`,
+          showarrow: false,
+          xanchor: 'right' as const,
+          yanchor: 'bottom' as const,
+          yshift: 4,
+          font: { ...chartFont, color: chartColors.spike },
+          bgcolor: chartColors.background,
+          opacity: 0.8,
+          borderpad: 2,
+        }))
+        : []
 
       return {
         shapes: [
           ...dayNightShapes,
-          ...(showThresholds ? [...healthThresholdShapes, ...healthThresholdIconShapes] : []),
+          ...(showThresholds ? healthThresholdShapes : []),
         ],
         annotations: [
-          ...(showThresholds ? healthThresholdAnnotations : []),
-          ...rateAnnotations,
+          ...thresholdAnnotations,
         ],
       }
     }
@@ -333,7 +283,7 @@ export function NoiseChart({
       hoverinfo: 'none',
     })
 
-    const chartIndicatorLayout = getChartIndicatorLayout(displayedAboveLimitPercentages, showHealthThresholdsRef.current)
+    const chartIndicatorLayout = getChartIndicatorLayout(showHealthThresholdsRef.current)
     const layout: Partial<Plotly.Layout> = {
       autosize: true,
       paper_bgcolor: chartColors.background,
@@ -492,22 +442,6 @@ export function NoiseChart({
 
         if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd) && rangeEnd > rangeStart) {
           setVisibleRange([rangeStart, rangeEnd])
-          const visibleAboveLimitPercentages = getMeanAboveHealthLimitPercentagesInRange(
-            chartData.points,
-            rangeStart,
-            rangeEnd,
-          )
-
-          if (
-            visibleAboveLimitPercentages.daytime !== displayedAboveLimitPercentages.daytime ||
-            visibleAboveLimitPercentages.nighttime !== displayedAboveLimitPercentages.nighttime
-          ) {
-            displayedAboveLimitPercentages = visibleAboveLimitPercentages
-            void Plotly.relayout(plot, getChartIndicatorLayout(
-              displayedAboveLimitPercentages,
-              showHealthThresholdsRef.current,
-            ))
-          }
         }
       })
     }
