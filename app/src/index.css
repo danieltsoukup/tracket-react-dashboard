@@ -633,7 +633,14 @@ body {
   }
 
   .noise-chart-toolbar-actions {
-    justify-content: space-between;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .noise-chart-toolbar-actions .noise-chart-download {
+    box-sizing: border-box;
+    width: 100%;
+    white-space: nowrap;
   }
 
 }
