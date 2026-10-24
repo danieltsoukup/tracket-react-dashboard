@@ -220,17 +220,33 @@ export function NoiseChart({
       y1: value,
       line: { color: chartColors.spike, width: 1, dash: 'dash' },
     }))
+    const healthThresholdIconShapes: NonNullable<Plotly.Layout['shapes']> = healthThresholdLines.map(({ value }) => ({
+      type: 'circle',
+      xref: 'x',
+      xsizemode: 'pixel',
+      xanchor: new Date(chartRangeData.rangeStart).toISOString(),
+      x0: 0,
+      x1: 22,
+      yref: 'y',
+      ysizemode: 'pixel',
+      yanchor: value,
+      y0: -11,
+      y1: 11,
+      fillcolor: 'rgba(255, 255, 255, 0.75)',
+      line: { width: 0 },
+      layer: 'above',
+    }))
     const healthThresholdAnnotations: NonNullable<Plotly.Layout['annotations']> = healthThresholdLines.map(({ value, icon }) => ({
       xref: 'paper',
       x: 0,
+      xshift: 11,
       yref: 'y',
       y: value,
       text: `<span style="font-family: 'Material Symbols Outlined'; font-weight: 400">${icon}</span>`,
       showarrow: false,
-      xanchor: 'left',
-      yanchor: 'bottom',
-      yshift: 4,
-      font: { ...chartFont, color: chartColors.spike },
+      xanchor: 'center',
+      yanchor: 'middle',
+      font: { ...chartFont, color: chartColors.spike, size: 14 },
     }))
     const dayDuration = 24 * 60 * 60 * 1000
 
@@ -296,7 +312,11 @@ export function NoiseChart({
 
       return {
         ...maximumLayout,
-        shapes: [...dayNightShapes, ...(showThresholds ? healthThresholdShapes : []), ...(maximumLayout.shapes ?? [])],
+        shapes: [
+          ...dayNightShapes,
+          ...(showThresholds ? [...healthThresholdShapes, ...healthThresholdIconShapes] : []),
+          ...(maximumLayout.shapes ?? []),
+        ],
         annotations: [
           ...(showThresholds ? healthThresholdAnnotations : []),
           ...rateAnnotations,

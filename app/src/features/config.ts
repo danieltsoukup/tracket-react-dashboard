@@ -13,6 +13,7 @@ export const chartColors = {
   grid: '#E3E8E4',
   spike: '#718078',
   nightzone: '#E3E8E4',
+  alert: '#D64545',
 }
 
 export const chartFont = {
