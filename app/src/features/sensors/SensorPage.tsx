@@ -17,6 +17,7 @@ import { SensorLocationMap } from './SensorLocationMap.tsx'
 import { SensorPanel } from './SensorPanel.tsx'
 import { getSensorLocalDate, shiftSensorLocalDate, toSensorLocalTimestamp } from '../../utils/sensorLocalTime.ts'
 import { dayNightIcons } from '../config.ts'
+import { WHOReference } from '../infoModal.tsx'
 
 function SensorPage() {
   const { sensorId } = useParams<{ sensorId: string }>()
@@ -290,13 +291,7 @@ function SensorPage() {
                           <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
                           <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
                         </ul>
-                        <a
-                          href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Read the Toronto Public Health reference
-                        </a>
+                        <WHOReference />
                       </>
                     )}
                   >
@@ -326,13 +321,7 @@ function SensorPage() {
                       <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
                     </ul>
                     <p>
-                      <a
-                        href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Read the Toronto Public Health reference
-                      </a>
+                      <WHOReference />
                     </p>
                   </>
                 )}

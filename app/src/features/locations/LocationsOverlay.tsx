@@ -4,7 +4,7 @@
  */
 import { useState } from 'react'
 import { getLocationIcon, type LocationHealth } from './locations.config.ts'
-import { NoiseInfoDialog } from '../infoModal.tsx'
+import { NoiseInfoDialog, WHOReference } from '../infoModal.tsx'
 import { dayNightIcons } from '../config.ts'
 
 type LocationCounts = {
@@ -139,29 +139,29 @@ export function LocationsOverlay({
 
   const noiseInfoContent = (
     <>
-      <p>
-        Location marker colors reflect whether their hourly mean exceeds the outdoor health limits set by the WHO.
+      <p className="noise-info-modal__section noise-info-modal__section--first">
+        <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--unhealthy" aria-hidden="true">{getLocationIcon('unhealthy')}</span>
+        <span><strong>Over Limit:</strong> the sensor's hourly mean exceeds the outdoor health limits set by the WHO<sup className="noise-info-modal__citation">1</sup>.</span>
       </p>
-      <ul>
+      <ul className="noise-info-modal__limits">
         <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.day}</span><span><strong>07:00-23:00:</strong> keep below 55 dB</span></li>
         <li><span className="material-symbols-outlined" aria-hidden="true">{dayNightIcons.night}</span><span><strong>23:00-07:00:</strong> keep below 40 dB</span></li>
       </ul>
-      <p>
-        Use the status toggles to filter locations on the map. You can combine multiple health states.
-      </p>
-      <p>
-        Sensors are marked inactive if they have not reported data in the last 24 hours.
-      </p>
-      <p>
-        The average pill shows the latest hourly reading average across sensors in the current map view.
-      </p>
-      <a
-        href="https://www.toronto.ca/wp-content/uploads/2017/11/8f98-tph-How-Loud-is-Too-Loud-Health-Impacts-Environmental-Noise.pdf"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Read the Toronto Public Health reference
-      </a>
+      <ul className="noise-info-modal__legend">
+        <li>
+          <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--active" aria-hidden="true">{getLocationIcon('active')}</span>
+          <span><strong>Active:</strong> reporting data within the health limits.</span>
+        </li>
+        <li>
+          <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--inactive" aria-hidden="true">{getLocationIcon('inactive')}</span>
+          <span><strong>Inactive:</strong> no data reported in the last 24 hours.</span>
+        </li>
+        <li>
+          <span className="material-symbols-outlined location-tooltip__status-icon" aria-hidden="true">{getLocationIcon('average')}</span>
+          <span><strong>Average:</strong> current average across sensors in the view.</span>
+        </li>
+      </ul>
+      <WHOReference />
     </>
   )
 

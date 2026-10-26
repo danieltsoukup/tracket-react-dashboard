@@ -1,6 +1,19 @@
 import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 
+export function WHOReference() {
+  return (
+    <a
+      className="noise-info-modal__reference"
+      href="https://www.who.int/europe/publications/i/item/9789289041737"
+      target="_blank"
+      rel="noreferrer"
+    >
+      1. WHO (2009) night noise guidelines.
+    </a>
+  )
+}
+
 type NoiseInfoDialogProps = {
   isOpen: boolean
   onClose: () => void

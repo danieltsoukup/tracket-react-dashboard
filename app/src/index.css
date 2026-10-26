@@ -984,9 +984,37 @@ body {
   flex: 0 0 auto;
 }
 
+.noise-info-modal__section--first {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.noise-info-modal .noise-info-modal__limits {
+  width: fit-content;
+  margin: 0 auto 16px;
+}
+
+.noise-info-modal__legend li {
+  min-height: 24px;
+  margin-bottom: 8px;
+}
+
+.noise-info-modal__legend li:last-child {
+  margin-bottom: 0;
+}
+
 .noise-info-modal a {
   color: var(--color-error);
-  font-weight: 700;
+}
+
+.noise-info-modal__citation {
+  margin-left: 2px;
+  font-size: 0.75em;
+}
+
+.noise-info-modal__reference {
+  font-size: 0.75rem;
 }
 
 .leaflet-top.leaflet-left {
