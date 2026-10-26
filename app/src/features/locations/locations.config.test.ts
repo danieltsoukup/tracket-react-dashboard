@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, getLocationIcon, getMostCommonLocationHealth, isLocationActive } from './locations.config.ts'
+import { LOCATION_STATUS_COLORS, getLocationColor, getLocationHealth, getLocationIcon, getMostCommonLocationHealth, getReadingHealth, isLocationActive } from './locations.config.ts'
 
 function timestampAtHour(hour: number) {
   return new Date(Date.UTC(2026, 0, 15, hour, 0, 0)).toISOString()
@@ -35,6 +35,15 @@ describe('getLocationHealth', () => {
     expect(getLocationHealth(true, '2026-01-15T07:00:00-05:00', 50)).toBe('active')
     expect(getLocationHealth(true, '2026-01-15T22:59:00-05:00', 50)).toBe('active')
     expect(getLocationHealth(true, '2026-01-15T23:00:00-05:00', 50)).toBe('unhealthy')
+  })
+})
+
+describe('getReadingHealth', () => {
+  it('classifies readings independently of sensor availability', () => {
+    expect(getReadingHealth(timestampAtHour(12), 55)).toBe('active')
+    expect(getReadingHealth(timestampAtHour(12), 55.1)).toBe('unhealthy')
+    expect(getReadingHealth(timestampAtHour(23), 40)).toBe('active')
+    expect(getReadingHealth(timestampAtHour(23), 40.1)).toBe('unhealthy')
   })
 })
 

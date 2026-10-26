@@ -6,7 +6,7 @@ import { chartColors, chartFont, dayNightIcons } from '../config.ts'
 import { getTimeOfDayIcon } from './chartTooltip.ts'
 import type { TimeOfDayIcon } from './chartTooltip.ts'
 import {
-  getLocationHealth,
+  getReadingHealth,
   LOCATION_HEALTH_HOURS,
 } from '../locations/locations.config.ts'
 import type { LocationHealth } from '../locations/locations.config.ts'
@@ -254,9 +254,9 @@ export function HourlyProfile({ active, measurements }: HourlyProfileProps) {
           min: point.min,
           max: point.max,
           mean: point.mean,
-          minHealth: getLocationHealth(active, `2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.min),
-          maxHealth: getLocationHealth(active, `2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.max),
-          meanHealth: getLocationHealth(active, `2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.mean),
+          minHealth: getReadingHealth(`2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.min),
+          maxHealth: getReadingHealth(`2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.max),
+          meanHealth: getReadingHealth(`2000-01-01T${String(point.hour).padStart(2, '0')}:00:00Z`, point.mean),
         })
       }
 

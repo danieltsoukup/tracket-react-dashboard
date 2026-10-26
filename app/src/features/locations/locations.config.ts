@@ -87,6 +87,12 @@ export function getLocationHealthThreshold(hourEnd: string): number {
   return LOCATION_HEALTH_THRESHOLDS[getLocationHealthPeriod(hourEnd)]
 }
 
+export type ReadingHealth = Extract<LocationHealth, 'active' | 'unhealthy'>
+
+export function getReadingHealth(hourEnd: string, hourMean: number): ReadingHealth {
+  return hourMean > getLocationHealthThreshold(hourEnd) ? 'unhealthy' : 'active'
+}
+
 export function getLocationHealth(active: boolean, hourEnd: string, hourMean: number): LocationHealth {
   /**
    * Classify a location based on its active status and noise level.
@@ -98,7 +104,7 @@ export function getLocationHealth(active: boolean, hourEnd: string, hourMean: nu
     return 'inactive'
   }
 
-  return hourMean > getLocationHealthThreshold(hourEnd) ? 'unhealthy' : 'active'
+  return getReadingHealth(hourEnd, hourMean)
 }
 
 export function getLocationColor(active: boolean, hourEnd: string, hourMean: number) {

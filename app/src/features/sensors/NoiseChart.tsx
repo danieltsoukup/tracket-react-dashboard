@@ -16,7 +16,7 @@ import {
 } from './noiseChartData.ts'
 import type { NoiseChartData } from './noiseChartData.ts'
 import {
-  getLocationHealth,
+  getReadingHealth,
   LOCATION_HEALTH_HOURS,
   LOCATION_HEALTH_THRESHOLDS,
 } from '../locations/locations.config.ts'
@@ -376,11 +376,11 @@ export function NoiseChart({
         timeOfDayIcon: getTimeOfDayIcon(measurement.timestamp),
         measurement: {
           min: measurement.min,
-          minHealth: getLocationHealth(active, measurement.timestamp, measurement.min),
+          minHealth: getReadingHealth(measurement.timestamp, measurement.min),
           mean: measurement.mean,
-          meanHealth: getLocationHealth(active, measurement.timestamp, measurement.mean),
+          meanHealth: getReadingHealth(measurement.timestamp, measurement.mean),
           max: measurement.max,
-          maxHealth: getLocationHealth(active, measurement.timestamp, measurement.max),
+          maxHealth: getReadingHealth(measurement.timestamp, measurement.max),
         },
         notes: getAnnotationsAtTime(
           timelineDataRef.current.intervals,
