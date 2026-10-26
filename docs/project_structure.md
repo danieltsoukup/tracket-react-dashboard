@@ -1,122 +1,126 @@
 # Project Structure
 
-## Current Structure
+## Repository layout
 
 ```text
 tracket-react-dashboard/
-├── index.html
-├── package.json
-├── package-lock.json
-├── vite.config.ts
-├── tsconfig.json
-├── tsconfig.app.json
-├── tsconfig.node.json
-├── .oxlintrc.json
-├── .gitignore
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   └── workflows/                 # CI, CodeQL, and Vercel deployment workflows
+├── app/                            # React/Vite application root
+│   ├── public/                     # Static assets copied into the build
+│   ├── src/
+│   │   ├── features/
+│   │   │   ├── locations/          # Location map, overlay, API, types, status config
+│   │   │   ├── sensors/            # Sensor detail page, maps, charts, APIs, data helpers
+│   │   │   ├── config.ts           # Shared API and chart configuration
+│   │   │   └── infoModal.tsx       # Shared informational content
+│   │   ├── utils/                  # Sensor-local time and API timezone correction
+│   │   ├── App.tsx                 # Router and route fallback
+│   │   ├── index.css               # Application styles
+│   │   └── main.tsx                # React entry point
+│   ├── .env.development.local.example
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig*.json
+│   ├── vite.config.ts
+│   └── vercel.json
+├── docs/
+│   ├── DEV-README.md
+│   ├── high_level_design.md
+│   └── project_structure.md
 ├── README.md
 ├── LICENSE
-├── public/
-│   ├── favicon.svg
-│   └── icons.svg
-├── src/
-│   ├── App.tsx
-│   ├── index.css
-│   ├── main.tsx
-│   └── assets/
-│       └── hero.png
-└── docs/
-	├── high_level_design.md
-	└── project_structure.md
+└── .gitignore
 ```
 
-The `node_modules/` and `dist/` directories are generated locally and are not committed to Git.
+The local `.env.development.local` file is intentionally not listed; it is
+machine-specific and should not be committed. `node_modules/` and build output
+are generated and are not committed.
 
-## Application Files
+## Application source
 
-### `index.html`
+### App entry and routing
 
-The browser entry document. It provides the `root` element where React mounts and loads `src/main.tsx`.
+- `app/src/main.tsx` mounts the React application.
+- `app/src/App.tsx` configures the browser router: `/locations` renders the
+  locations map, `/locations/:sensorId` renders a sensor detail page, and
+  unknown paths redirect to `/locations`.
+- `app/src/index.css` contains the shared and feature-level application styles.
+- `app/public/` contains static files served from the site root, including the
+  Tracket logo and favicon.
 
-### `src/main.tsx`
+### `app/src/features/locations/`
 
-The React entrypoint. It enables `StrictMode`, finds the `root` element, and renders the `App` component.
+- `LocationsPage.tsx` loads location data and owns the Leaflet map, clustered
+  markers, status filters, viewport statistics, and loading/error states.
+- `LocationsOverlay.tsx` renders map controls and summary information.
+- `locations.api.ts` fetches and validates location responses.
+- `locations.types.ts` defines the location data type.
+- `locations.config.ts` contains tile configuration, activity and health
+  classification, and marker status colors.
+- `locations.*.test.ts` covers the API and status/configuration behavior.
 
-### `src/App.tsx`
+### `app/src/features/sensors/`
 
-The current application shell. It renders the Tracket header and the placeholder `LocationsPage`. This is where the application routes and top-level layout will be introduced.
+- `SensorPage.tsx` loads location, noise, and annotation data and composes the
+  sensor detail view.
+- `SensorPanel.tsx`, `LatestNoiseReading.tsx`, and `SensorLocationMap.tsx`
+  provide reusable detail panels and latest-reading/map views.
+- `HourlyProfile.tsx` renders the recent hourly noise profile.
+- `NoiseChart.tsx` renders noise history, date/granularity controls, threshold
+  indicators, annotations, range statistics, and CSV download.
+- `sensors.api.ts` fetches paginated noise measurements; `annotations.api.ts`
+  fetches annotations for a location and time range.
+- `noiseChartData.ts`, `hourlyProfileData.ts`,
+  `annotationTimelineData.ts`, `noiseDownload.ts`, and `chartTooltip.ts`
+  prepare chart, timeline, download, and tooltip data.
+- `*.test.ts` files colocated in this feature cover API clients and data
+  preparation/download behavior.
 
-### `src/index.css`
+`app/src/features/config.ts` contains shared API and chart presentation
+settings; `app/src/features/infoModal.tsx` contains shared informational
+content.
 
-Global and page-level styles for the current placeholder, including typography, colors, header layout, spacing, and responsive behavior.
+### `app/src/utils/`
 
-### `src/assets/`
+- `sensorLocalTime.ts` parses and formats timestamp wall-clock fields, shifts
+  sensor-local calendar dates, and prepares chart/request timestamps.
+- `locationTimezoneCorrection.ts` temporarily corrects timestamps for a small
+  set of locations until the API returns each location's local time.
+- The colocated tests cover the time helpers and timezone correction.
 
-Assets imported by React components.
+## Application configuration
 
-## Static Files
+- `app/package.json` defines dependencies and npm scripts. Run commands from
+  the `app/` directory:
 
-### `public/`
+  ```bash
+  npm run dev
+  npm run test
+  npm run lint
+  npm run build
+  npm run preview
+  ```
 
-Files in this directory are copied directly into the production build and can be referenced from the site root.
+- `app/package-lock.json` pins npm dependency versions.
+- `app/vite.config.ts` configures Vite and the React plugin.
+- `app/tsconfig.json`, `app/tsconfig.app.json`, and
+  `app/tsconfig.node.json` configure TypeScript for the project, browser app,
+  and Node/Vite configuration.
+- `app/.oxlintrc.json` configures Oxlint.
+- `app/.env.development.local.example` documents the optional development-only
+  Stadia tile API key variable.
+- `app/vercel.json` configures Vercel behavior for the app.
 
-- `favicon.svg`: browser tab icon.
-- `icons.svg`: shared SVG icon definitions.
+## Repository documentation and automation
 
-## Configuration
-
-### `package.json`
-
-Defines project metadata, npm scripts, and dependencies.
-
-```bash
-npm run dev       # Start the Vite development server
-npm run build     # Type-check and create dist/
-npm run lint      # Run Oxlint
-npm run preview   # Preview the production build
-```
-
-### `package-lock.json`
-
-Locks exact npm dependency versions so installs are reproducible locally and in Docker.
-
-### `vite.config.ts`
-
-Configures Vite and enables the React plugin. Vite provides the development server, hot module replacement, and production bundling.
-
-### `tsconfig.json`
-
-The root TypeScript configuration. It references the application and Node/Vite-specific configurations.
-
-### `tsconfig.app.json`
-
-TypeScript settings for files under `src/`, including JSX, browser APIs, bundler module resolution, and unused-code checks.
-
-### `tsconfig.node.json`
-
-TypeScript settings for Node-side configuration files such as `vite.config.ts`.
-
-### `.oxlintrc.json`
-
-Configures Oxlint with React, TypeScript, and JavaScript rules.
-
-### `.gitignore`
-
-Lists generated files and local-only files that Git should not track, including `node_modules/`, `dist/`, logs, and editor settings.
-
-## Documentation
-
-### `docs/high_level_design.md`
-
-Describes the intended dashboard features, public API endpoints, routes, and planned technology stack.
-
-### `docs/project_structure.md`
-
-Documents the purpose of the repository files and the planned application organization.
-
-### `README.md`
-
-Currently contains the default Vite setup notes. It should eventually be replaced with project-specific development, testing, and deployment instructions.
-
-### `LICENSE`
-
-Contains the project's license terms.
+- `README.md` describes the Tracket project and dashboard.
+- `docs/high_level_design.md` describes routes, features, APIs, timestamps, and
+  the technology choices.
+- `docs/DEV-README.md` contains developer and Vercel deployment notes.
+- `.github/workflows/` contains CI, CodeQL, and preview/production deployment
+  workflows.
+- `.github/ISSUE_TEMPLATE/` contains issue templates.
+- `.gitignore` defines files and generated output that should not be tracked.
