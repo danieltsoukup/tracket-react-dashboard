@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { fetchLocation } from '../locations/locations.api.ts'
-import { isLocationActive } from '../locations/locations.config.ts'
+import { getLocationHealth, getLocationIcon, isLocationActive } from '../locations/locations.config.ts'
 import type { Location } from '../locations/locations.types.ts'
 import { fetchSensorNoise, type NoiseGranularity, type NoiseMeasurement } from './sensors.api.ts'
 import { fetchSensorAnnotations, type Annotation } from './annotations.api.ts'
@@ -242,6 +242,18 @@ function SensorPage() {
     }
   }, [chartEnd, chartStart, hasValidSensorId, location, parsedSensorId])
 
+  const latestHourlyMeasurement = [...hourlyMeasurements].sort((first, second) => first.timestamp.localeCompare(second.timestamp)).at(-1)
+  const sensorHealth = location && latestHourlyMeasurement
+    ? getLocationHealth(location.active, latestHourlyMeasurement.timestamp, latestHourlyMeasurement.mean)
+    : null
+  const sensorStatusLabel = sensorHealth === 'unhealthy'
+    ? 'Over limit'
+    : sensorHealth === 'inactive'
+      ? 'Inactive'
+      : sensorHealth === 'active'
+        ? 'Active'
+        : 'Unknown'
+
   return (
     <main className="sensor-page">
       <header className="sensor-header">
@@ -273,7 +285,7 @@ function SensorPage() {
             <>
               {(measurements.length > 0 || profileMeasurements.length > 0) && (
                 <div className="sensor-insights">
-                  <SensorPanel title="Last hourly record" icon="last_page">
+                  <SensorPanel title={`Sensor status: ${sensorStatusLabel}`} icon={sensorHealth ? getLocationIcon(sensorHealth) as 'sensors' | 'sensors_off' : 'sensors_off'}>
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
                   <SensorPanel

@@ -4,7 +4,7 @@ import { NoiseInfoDialog } from '../infoModal.tsx'
 
 type SensorPanelProps = {
   title: string
-  icon: 'show_chart' | 'location_on' | 'calendar_month' | 'last_page'
+  icon: 'show_chart' | 'location_on' | 'calendar_month' | 'last_page' | 'sensors' | 'sensors_off'
   children: ReactNode
   infoContent?: ReactNode
 }
