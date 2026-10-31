@@ -52,7 +52,7 @@ function LocationStatus({
 }: LocationStatusProps) {
   const statusConfig: Array<{ key: LocationHealth; label: string; count: number }> = [
     { key: 'unhealthy', label: 'Over limit', count: unhealthy },
-    { key: 'active', label: 'Active', count: active },
+    { key: 'active', label: 'Moderate', count: active },
     { key: 'inactive', label: 'Inactive', count: inactive },
   ]
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -150,7 +150,7 @@ export function LocationsOverlay({
       <ul className="noise-info-modal__legend">
         <li>
           <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--active" aria-hidden="true">{getLocationIcon('active')}</span>
-          <span><strong>Active:</strong> reporting data within the health limits.</span>
+          <span><strong>Moderate:</strong> reporting data within the health limits.</span>
         </li>
         <li>
           <span className="material-symbols-outlined location-tooltip__status-icon location-tooltip__status-icon--inactive" aria-hidden="true">{getLocationIcon('inactive')}</span>
