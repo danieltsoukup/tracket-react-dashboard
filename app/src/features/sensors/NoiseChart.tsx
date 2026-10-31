@@ -624,15 +624,15 @@ export function NoiseChart({
         <div className="noise-chart-facts" aria-label="Noise history statistics">
           <NoiseFactCard
             value={maximumNoise === null ? '—' : `${maximumNoise.toFixed(1)} dB`}
-            description="Maximum recorded noise"
+            description="highest noise level recorded"
           />
           <NoiseFactCard
             value={aboveLimitPercentages.daytime === null ? '—' : `${Math.round(aboveLimitPercentages.daytime)}%`}
-            description="Of daytime measurements above the 55 dB limit (07:00–23:00)"
+            description="of daytime measurements (07:00–23:00) exceed the 55 dB health limit set by the WHO"
           />
           <NoiseFactCard
             value={aboveLimitPercentages.nighttime === null ? '—' : `${Math.round(aboveLimitPercentages.nighttime)}%`}
-            description="Of nighttime measurements above the 40 dB limit (23:00–07:00)"
+            description="of nighttime measurements (23:00–07:00) exceed the 40 dB health limit set by the WHO"
           />
         </div>
         {tooltip && (
