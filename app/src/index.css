@@ -1005,7 +1005,7 @@ body {
 }
 
 .noise-info-modal a {
-  color: var(--color-error);
+  color: inherit;
 }
 
 .noise-info-modal__citation {
