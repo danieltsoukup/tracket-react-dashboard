@@ -18,9 +18,9 @@ jobs:
   lint-unit-test:
     uses: ./.github/workflows/lint_unit_test.yaml
 
-  deploy-production:
-    needs:
-      - codeql
-      - lint-unit-test
-    uses: ./.github/workflows/vercel_preview_deploy.yaml
-    secrets: inherit
+  # deploy-preview:
+  #   needs:
+  #     - codeql
+  #     - lint-unit-test
+  #   uses: ./.github/workflows/vercel_preview_deploy.yaml
+  #   secrets: inherit
