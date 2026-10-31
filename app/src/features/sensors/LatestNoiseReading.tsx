@@ -42,7 +42,8 @@ export function LatestNoiseReading({ active, measurements }: LatestNoiseReadingP
 
   return (
     <section className="latest-noise-reading" aria-label="Latest hourly noise reading">
-      <p className="sensor-panel__eyebrow">Last record: {formatMeasurementDate(latestMeasurement.timestamp)}</p>
+      {/* <p className="sensor-panel__eyebrow">Last hourly record</p> */}
+      <p className="sensor-panel__eyebrow">{formatMeasurementDate(latestMeasurement.timestamp)}</p>
       <div className={`latest-noise-reading__value latest-noise-reading__value--${health}`}>
         {latestMeasurement.mean.toFixed(1)} <span>dB</span>
       </div>

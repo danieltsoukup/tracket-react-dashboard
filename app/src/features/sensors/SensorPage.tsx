@@ -251,7 +251,7 @@ function SensorPage() {
     : sensorHealth === 'inactive'
       ? 'Inactive'
       : sensorHealth === 'active'
-        ? 'Active'
+        ? 'Moderate'
         : 'Unknown'
 
   return (
@@ -285,7 +285,7 @@ function SensorPage() {
             <>
               {(measurements.length > 0 || profileMeasurements.length > 0) && (
                 <div className="sensor-insights">
-                  <SensorPanel title={`Sensor status: ${sensorStatusLabel}`} icon={sensorHealth ? getLocationIcon(sensorHealth) as 'sensors' | 'sensors_off' : 'sensors_off'}>
+                  <SensorPanel title={`Last hour: ${sensorStatusLabel}`} icon={sensorHealth ? getLocationIcon(sensorHealth) as 'sensors' | 'sensors_off' : 'sensors_off'}>
                     <LatestNoiseReading active={location.active} measurements={hourlyMeasurements} />
                   </SensorPanel>
                   <SensorPanel
