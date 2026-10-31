@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import Plotly from 'plotly.js-dist'
 import type { NoiseGranularity, NoiseMeasurement } from './sensors.api.ts'
 import type { Annotation } from './annotations.api.ts'
@@ -55,7 +55,7 @@ const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: 'short',
 })
 
-function NoiseFactCard({ value, description }: { value: string; description: string }) {
+function NoiseFactCard({ value, description }: { value: ReactNode; description: string }) {
   return (
     <div className="noise-chart-fact">
       <div className="noise-chart-fact__value">{value}</div>
@@ -623,7 +623,7 @@ export function NoiseChart({
         )}
         <div className="noise-chart-facts" aria-label="Noise history statistics">
           <NoiseFactCard
-            value={maximumNoise === null ? '—' : `${maximumNoise.toFixed(1)} dB`}
+            value={maximumNoise === null ? '—' : <>{maximumNoise.toFixed(1)} <span style={{ fontSize: '0.6em' }}>dB</span></>}
             description="highest noise level recorded"
           />
           <NoiseFactCard
